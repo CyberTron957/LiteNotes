@@ -636,7 +636,7 @@
             <button id="modal-close-btn" class="modal-close-btn">&times;</button>
             <div class="auth-header">
                 <h1 id="modal-title">Sign In</h1>
-                <p class="auth-subtitle">Sync your notes across devices</p>
+                <p class="auth-subtitle" id="modal-subtitle">Sync your notes across devices</p>
             </div>
             <div id="login-form">
                 <div class="form-group">
@@ -673,10 +673,6 @@
                 </div>
             </div>
             <div id="forgot-password-form" style="display: none;">
-                <div class="auth-header">
-                    <h1>Reset Password</h1>
-                    <p class="auth-subtitle">Enter your email to receive a reset link.</p>
-                </div>
                 <div class="form-group">
                     <label for="forgot-email" class="form-label">Email</label>
                     <input type="email" id="forgot-email" class="form-input" placeholder="Enter your account email">
@@ -750,6 +746,7 @@
         const authModal = document.getElementById('auth-modal');
         const modalCloseBtn = document.getElementById('modal-close-btn');
         const modalTitle = document.getElementById('modal-title');
+        const modalSubtitle = document.getElementById('modal-subtitle');
         const showForgotPassword = document.getElementById('show-forgot-password');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const forgotPasswordButton = document.getElementById('forgot-password-button');
@@ -768,15 +765,17 @@
         showRegister.addEventListener('click', () => {
             loginForm.style.display = 'none';
             registerForm.style.display = 'block';
-            forgotPasswordForm.style.display = 'none'; // Hide forgot form
-            modalTitle.textContent = 'Register'; // Update modal title
+            forgotPasswordForm.style.display = 'none';
+            modalTitle.textContent = 'Register';
+            modalSubtitle.textContent = 'Create an account to save notes';
         });
 
         showLogin.addEventListener('click', () => {
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
-            forgotPasswordForm.style.display = 'none'; // Hide forgot form
-            modalTitle.textContent = 'Sign In'; // Update modal title
+            forgotPasswordForm.style.display = 'none';
+            modalTitle.textContent = 'Sign In';
+            modalSubtitle.textContent = 'Sync your notes across devices';
         });
 
         loginButton.addEventListener('click', login);
@@ -795,8 +794,9 @@
             // Ensure login form is visible by default when modal opens
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
-            forgotPasswordForm.style.display = 'none'; // Hide forgot form
-            modalTitle.textContent = 'Sign In'; 
+            forgotPasswordForm.style.display = 'none';
+            modalTitle.textContent = 'Sign In';
+            modalSubtitle.textContent = 'Sync your notes across devices';
         });
 
         // Show Forgot Password form
@@ -804,7 +804,8 @@
             loginForm.style.display = 'none';
             registerForm.style.display = 'none';
             forgotPasswordForm.style.display = 'block';
-            modalTitle.textContent = 'Reset Password'; 
+            modalTitle.textContent = 'Reset Password';
+            modalSubtitle.textContent = 'Enter your email to receive a reset link.';
         });
 
         // Show Login from Forgot Password form
@@ -813,6 +814,7 @@
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
             modalTitle.textContent = 'Sign In';
+            modalSubtitle.textContent = 'Sync your notes across devices';
         });
 
         // Forgot Password button action
@@ -871,24 +873,32 @@
             // Ensure app container is visible AFTER potentially loading notes
             appContainer.style.display = 'flex'; 
 
-            // Now that global `notes` should be loaded and sorted, select the last note
-            console.log("Attempting to select last opened note...");
-            const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
-            console.log("lastOpenNoteId from storage:", lastOpenNoteId);
-            console.log("Current notes array (length):", notes.length);
-            console.log("Current notes array (IDs):", notes.map(n => n.id));
-
-            const lastNote = notes.find(note => note.id === lastOpenNoteId);
-
-            if (lastNote) {
-                console.log("Found last note, selecting:", lastNote.id);
-                selectNote(lastNote.id);
-            } else if (notes.length > 0) {
-                console.log("Last note not found or invalid, selecting first note:", notes[0].id);
-                selectNote(notes[0].id); // Select the first (most recent) note
+            // If no notes exist after loading, create a default one
+            if (notes.length === 0) {
+                console.log("No notes found, creating initial note...");
+                await createNewNote(); // Wait for creation and selection
+                console.log("Initial note created.");
             } else {
-                console.log("No notes found, rendering empty view.");
-                renderEmptyNoteView();
+                // Only try to select existing note if we didn't just create one
+                console.log("Attempting to select last opened note...");
+                const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
+                console.log("lastOpenNoteId from storage:", lastOpenNoteId);
+                console.log("Current notes array (length):", notes.length);
+                console.log("Current notes array (IDs):", notes.map(n => n.id));
+
+                const lastNote = notes.find(note => note.id === lastOpenNoteId);
+
+                if (lastNote) {
+                    console.log("Found last note, selecting:", lastNote.id);
+                    selectNote(lastNote.id);
+                } else if (notes.length > 0) { // Should always be true here now unless create failed
+                    console.log("Last note not found or invalid, selecting first note:", notes[0].id);
+                    selectNote(notes[0].id); // Select the first (most recent) note
+                } else {
+                     // This case should ideally not be reached if creation worked
+                    console.log("No notes found, rendering empty view.");
+                    renderEmptyNoteView();
+                }
             }
         }
 
@@ -924,18 +934,22 @@
             // Confirm merge/upload if local notes exist
             const localNotesRaw = localStorage.getItem('localNotes');
             const localNotesExist = localNotesRaw && localNotesRaw !== '[]';
+            let proceedWithLogin = true; // Flag to track if login should proceed
+
             if (localNotesExist) {
-                if (!confirm('Logging in will attempt to upload your unsaved local notes to your account. Continue?')) {
-                    return;
+                if (!confirm('You have unsaved local notes. Logging in will attempt to upload these notes to your account. Continue?')) {
+                     proceedWithLogin = false;
+                     return; // Stop login if user cancels merge confirmation
                 }
             }
+
+            // If user cancelled, the function would have returned already
+            // Proceed with fetch/login only if proceedWithLogin is true (implicitly)
             
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 
@@ -960,21 +974,36 @@
                 // Close modal on successful login
                 authModal.classList.remove('visible');
                 
-                // Fetch server notes first
-                const serverNotes = await fetchNotes(); // fetchNotes needs to return the notes
+                // Fetch server notes first, BEFORE merge attempt
+                const serverNotes = await fetchNotes(); // <-- Capture the returned notes
 
                 // Attempt to merge local notes if they existed
-                if (localNotesExist && serverNotes) {
-                    await mergeLocalNotesWithServer(JSON.parse(localNotesRaw), serverNotes);
+                if (localNotesExist && serverNotes) { // Ensure serverNotes is not null/undefined
+                     console.log("Starting merge process...");
+                     await mergeLocalNotesWithServer(JSON.parse(localNotesRaw), serverNotes);
+                     console.log("Merge process finished. Clearing local notes and fetching final list.");
+                     // Clear local notes *after* successful merge attempt
+                     localStorage.removeItem('localNotes');
+                     // Re-fetch the final merged list from the server to ensure consistency
+                     await fetchNotes(); 
+                } else {
+                     console.log("No local notes to merge or server notes fetch failed.");
+                     // If no merge happened, the global `notes` variable was already updated 
+                     // by the initial fetchNotes call above, so no need to fetch again unless serverNotes failed.
+                     if (!serverNotes) {
+                         await fetchNotes(); // Retry fetch if the first one failed
+                     }
                 }
+                
+                showToast('Logged in successfully', 'success');
 
-                // Clear local notes *after* merge attempt
-                localStorage.removeItem('localNotes');
-                
-                // Fetch the final merged list from the server
-                await fetchNotes(); 
-                
-                showToast('Logged in successfully & notes merged', 'success');
+                 // Select the first note after login/merge
+                 if (notes.length > 0) {
+                     selectNote(notes[0].id);
+                 } else {
+                     renderEmptyNoteView();
+                 }
+
             } catch (error) {
                 showToast(error.message, 'error');
             }
@@ -1028,6 +1057,7 @@
                 loginForm.style.display = 'block';
                 forgotPasswordForm.style.display = 'none'; // Hide forgot form
                 modalTitle.textContent = 'Sign In';
+                modalSubtitle.textContent = 'Sync your notes across devices';
                 
                 // Auto-fill login fields in the modal
                 document.getElementById('username').value = username;
@@ -1044,33 +1074,42 @@
             try {
                 const response = await fetch('/notes', {
                     headers: {
-                        'Authorization': currentToken
+                        'Authorization': `Bearer ${currentToken}`
                     }
                 });
                 
                 if (!response.ok) {
+                    // Handle token expiration/invalidation
+                    if (response.status === 401 || response.status === 403) {
+                        console.log("Token invalid/expired during fetchNotes. Logging out.");
+                        logout(); // Attempt logout to clear local state
+                        return []; // Return empty array as user is logged out
+                    }
                     throw new Error('Failed to fetch notes from server');
                 }
                 
                 let fetchedNotes = await response.json();
                 console.log(`Fetched ${fetchedNotes.length} notes.`);
 
-                // Ensure timestamps exist and sort
+                // Ensure timestamps exist and sort (using updated_at)
                 fetchedNotes.forEach(note => {
-                    if (!note.updated_at) note.updated_at = note.created_at || new Date(0).toISOString(); 
+                    // Use updated_at if available, otherwise created_at, fallback to epoch
+                    note.sort_timestamp = note.updated_at || note.created_at || new Date(0).toISOString(); 
                 });
-                fetchedNotes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                fetchedNotes.sort((a, b) => new Date(b.sort_timestamp) - new Date(a.sort_timestamp));
                 
-                // Update global notes array and render list immediately
+                // Update global notes array (still useful for immediate UI updates)
                 notes = fetchedNotes; 
                 renderNotesList();
                 
                 console.log("Notes fetched, sorted, and sidebar rendered.");
-                // Don't return notes, rely on global update
+                return fetchedNotes; // <-- RETURN the fetched notes
+
             } catch (error) {
                 showToast(error.message, 'error');
                 notes = []; // Clear notes on error
                 renderNotesList(); // Render empty list
+                return []; // Return empty array on error
             }
         }
 
@@ -1193,7 +1232,7 @@
                     const response = await fetch('/notes', {
                         method: 'POST',
                         headers: {
-                            'Authorization': currentToken,
+                            'Authorization': `Bearer ${currentToken}`,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
@@ -1326,7 +1365,7 @@
                     const response = await fetch(`/notes/${currentNoteId}`, {
                         method: 'PUT',
                         headers: {
-                            'Authorization': currentToken,
+                            'Authorization': `Bearer ${currentToken}`,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ title: finalTitle, content })
@@ -1397,7 +1436,7 @@
                     const response = await fetch(`/notes/${noteId}`, {
                         method: 'DELETE',
                         headers: {
-                            'Authorization': currentToken
+                            'Authorization': `Bearer ${currentToken}`
                         }
                     });
                     
@@ -1439,14 +1478,18 @@
         // Logout function
         async function logout() {
             try {
-                const response = await fetch('/logout', {
+                // Call the backend logout, even if it just clears session
+                // The client-side token removal is the main part for JWT logout
+                await fetch('/logout', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': currentToken
-                    }
+                     headers: {
+                         // Include token if backend expects it, though not strictly necessary
+                         // if logout only destroys server session
+                         'Authorization': `Bearer ${currentToken}`
+                     }
                 });
                 
-                // Even if the server response fails, we still log out locally
+                // Proceed with local logout regardless of server response
                 localStorage.removeItem('token');
                 localStorage.removeItem('username');
                 
@@ -1507,7 +1550,7 @@
                         fetch('/notes', {
                             method: 'POST',
                             headers: {
-                                'Authorization': currentToken,
+                                'Authorization': `Bearer ${currentToken}`,
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({ 
@@ -1536,12 +1579,18 @@
         // Request Password Reset function
         async function requestPasswordReset() {
             const email = document.getElementById('forgot-email').value;
+            const forgotButton = document.getElementById('forgot-password-button'); // Get button
+
             if (!email) {
                 showToast('Please enter your email address', 'error');
                 return;
             }
 
             try {
+                // Disable button and show loading state
+                forgotButton.disabled = true;
+                forgotButton.textContent = 'Sending...';
+
                 const response = await fetch('/forgot-password', {
                     method: 'POST',
                     headers: {
@@ -1565,6 +1614,9 @@
             } catch (error) {
                 console.error('Forgot password error:', error);
                 showToast('An error occurred. Please try again.', 'error');
+                // Re-enable button and restore text on error
+                forgotButton.disabled = false;
+                forgotButton.textContent = 'Send Reset Link';
             }
         }
 
