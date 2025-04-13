@@ -84,6 +84,14 @@ app.post('/login', (req, res) => {
     });
 });
 
+// Logout
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return res.status(500).json({ message: 'Error logging out' });
+        res.json({ message: 'Logged out successfully' });
+    });
+});
+
 // Create note
 app.post('/notes', authenticateToken, (req, res) => {
     const { title, content } = req.body;
@@ -103,17 +111,7 @@ app.get('/notes', authenticateToken, (req, res) => {
     });
 });
 
-// Serve frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-
-// Add this new route for updating notes
+// Update note
 app.put('/notes/:id', authenticateToken, (req, res) => {
     const { title, content } = req.body;
     const noteId = req.params.id;
@@ -125,4 +123,32 @@ app.put('/notes/:id', authenticateToken, (req, res) => {
             if (this.changes === 0) return res.status(404).json({ message: 'Note not found' });
             res.json({ message: 'Note updated' });
         });
+});
+
+// Delete note
+app.delete('/notes/:id', authenticateToken, (req, res) => {
+    const noteId = req.params.id;
+
+    db.run('DELETE FROM notes WHERE id = ? AND user_id = ?', 
+        [noteId, req.user.id], 
+        function(err) {
+            if (err) return res.status(500).json({ message: 'Error deleting note' });
+            if (this.changes === 0) return res.status(404).json({ message: 'Note not found' });
+            res.json({ message: 'Note deleted' });
+        });
+});
+
+// Serve frontend
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Add route to toggle sidebar collapse
+app.post('/toggle-sidebar', authenticateToken, (req, res) => {
+    // This is a placeholder route. Actual implementation depends on frontend logic.
+    res.json({ message: 'Sidebar toggled' });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
