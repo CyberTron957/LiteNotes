@@ -174,10 +174,7 @@
             background-color: var(--hover);
             transform: translateX(0);
         }
-        
-        .note-item.active {
-            border-left: 3px solid var(--accent);
-        }
+    
 
         .note-content {
             flex: 1;
@@ -788,11 +785,9 @@
         });
 
         // Check auth status and initialize app
-        function initializeApp() {
-            const token = localStorage.getItem('token');
-            const username = localStorage.getItem('username');
+        async function initializeApp() {
+            // Restore sidebar state first
             const storedSidebarState = localStorage.getItem('sidebarState');
-
             if (storedSidebarState) {
                 isSidebarHidden = storedSidebarState === 'hidden';
                 if (isSidebarHidden) {
@@ -801,10 +796,13 @@
                     appContainer.classList.remove('sidebar-hidden');
                 }
             } else {
-                // Default is hidden, already set in HTML
                 localStorage.setItem('sidebarState', 'hidden');
             }
 
+            // Determine auth status
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            
             if (token && username) {
                 // User is logged in
                 currentToken = token;
@@ -814,27 +812,52 @@
                 userInfoSection.style.display = 'flex';
                 signinPrompt.style.display = 'none';
                 authModal.classList.remove('visible');
-                appContainer.style.display = 'flex';
-                fetchNotes(); // Fetch notes from server
+                // Fetch notes (this function now sorts and updates global `notes`)
+                await fetchNotes(); 
             } else {
                 // User is not logged in
                 userInfoSection.style.display = 'none';
                 signinPrompt.style.display = 'block';
-                appContainer.style.display = 'flex';   // Show app immediately
-                loadLocalNotes(); // Load notes from local storage
+                // Load notes (this function now sorts and updates global `notes`)
+                loadLocalNotes(); 
+            }
+
+            // Ensure app container is visible AFTER potentially loading notes
+            appContainer.style.display = 'flex'; 
+
+            // Now that global `notes` should be loaded and sorted, select the last note
+            console.log("Attempting to select last opened note...");
+            const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
+            console.log("lastOpenNoteId from storage:", lastOpenNoteId);
+            console.log("Current notes array (length):", notes.length);
+            console.log("Current notes array (IDs):", notes.map(n => n.id));
+
+            const lastNote = notes.find(note => note.id === lastOpenNoteId);
+
+            if (lastNote) {
+                console.log("Found last note, selecting:", lastNote.id);
+                selectNote(lastNote.id);
+            } else if (notes.length > 0) {
+                console.log("Last note not found or invalid, selecting first note:", notes[0].id);
+                selectNote(notes[0].id); // Select the first (most recent) note
+            } else {
+                console.log("No notes found, rendering empty view.");
+                renderEmptyNoteView();
             }
         }
 
         // Load notes from local storage
         function loadLocalNotes() {
             const localNotes = localStorage.getItem('localNotes');
-            notes = localNotes ? JSON.parse(localNotes) : [];
-            renderNotesList();
-            if (notes.length > 0) {
-                selectNote(notes[0].id);
-            } else {
-                renderEmptyNoteView();
-            }
+            let loaded = localNotes ? JSON.parse(localNotes) : [];
+            // Ensure timestamps exist and sort
+            loaded.forEach(note => {
+                if (!note.updated_at) note.updated_at = note.created_at || new Date(0).toISOString(); 
+            });
+            loaded.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+            notes = loaded; // Directly update global notes
+            renderNotesList(); // Update sidebar list
+            // Don't return anything, rely on global update
         }
 
         // Save notes to local storage
@@ -953,8 +976,8 @@
 
         // Fetch all notes (from server)
         async function fetchNotes() {
-            if (!currentToken) return null; // Return null if not logged in
-
+            if (!currentToken) return null; 
+            console.log("Fetching notes from server...");
             try {
                 const response = await fetch('/notes', {
                     headers: {
@@ -963,22 +986,28 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch notes');
+                    throw new Error('Failed to fetch notes from server');
                 }
                 
-                notes = await response.json();
+                let fetchedNotes = await response.json();
+                console.log(`Fetched ${fetchedNotes.length} notes.`);
+
+                // Ensure timestamps exist and sort
+                fetchedNotes.forEach(note => {
+                    if (!note.updated_at) note.updated_at = note.created_at || new Date(0).toISOString(); 
+                });
+                fetchedNotes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                
+                // Update global notes array and render list immediately
+                notes = fetchedNotes; 
                 renderNotesList();
                 
-                // If no note is selected and we have notes, select the first one
-                if (!currentNoteId && notes.length > 0) {
-                    selectNote(notes[0].id);
-                } else if (notes.length === 0) {
-                    renderEmptyNoteView();
-                }
-                return notes; // Return the fetched notes
+                console.log("Notes fetched, sorted, and sidebar rendered.");
+                // Don't return notes, rely on global update
             } catch (error) {
                 showToast(error.message, 'error');
-                return null; // Return null on error
+                notes = []; // Clear notes on error
+                renderNotesList(); // Render empty list
             }
         }
 
@@ -1017,6 +1046,7 @@
             if (selectedNote) {
                 renderNoteView(selectedNote);
                 renderNotesList(); // Update the active state in the list
+                localStorage.setItem('lastOpenNoteId', noteId); // Store last opened note
             } else {
                 // Handle case where note might have been deleted
                 currentNoteId = null;
@@ -1064,6 +1094,15 @@
             // Add event listeners
             contentInput.addEventListener('input', () => scheduleNoteSave(saveStatusDot));
             
+            // Restore scroll position
+            const savedScrollPosition = getScrollPosition(note.id);
+            if (contentInput && savedScrollPosition > 0) {
+                // Use setTimeout to ensure content is rendered before setting scroll
+                setTimeout(() => {
+                    contentInput.scrollTop = savedScrollPosition;
+                }, 0);
+            }
+
             // Add delete note functionality
             deleteNoteBtn.addEventListener('click', () => {
                 if (confirm('Are you sure you want to delete this note?')) {
@@ -1110,10 +1149,12 @@
                         id: data.id,
                         title: 'Untitled',
                         content: '',
-                        created_at: new Date().toISOString()
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString() // Add updated_at
                     };
                     
-                    notes.unshift(newNote);
+                    notes.unshift(newNote); // Add to beginning
+                    // No need to sort here, unshift keeps it at the top temporarily
                     renderNotesList();
                     selectNote(newNote.id);
                 } catch (error) {
@@ -1122,12 +1163,14 @@
             } else {
                 // Not logged in: Create locally
                 const newNote = {
-                    id: `local-${Date.now()}`, // Simple unique local ID
+                    id: `local-${Date.now()}`, 
                     title: 'Untitled',
                     content: '',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString() // Add updated_at
                 };
                 notes.unshift(newNote);
+                // No need to sort here
                 saveLocalNotes(); // Save to local storage
                 renderNotesList();
                 selectNote(newNote.id);
@@ -1151,8 +1194,28 @@
             // Schedule new save
             saveTimeout = setTimeout(() => {
                 saveCurrentNote();
-            }, 1000); // 1 second delay
+            }, 500); // Reduced delay to 0.5 seconds
         }
+
+        // --- Scroll Position Persistence ---
+        function getScrollPositions() {
+            const data = localStorage.getItem('noteScrollPositions');
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveScrollPosition(noteId, scrollTop) {
+            if (!noteId) return;
+            const positions = getScrollPositions();
+            positions[noteId] = scrollTop;
+            localStorage.setItem('noteScrollPositions', JSON.stringify(positions));
+        }
+
+        function getScrollPosition(noteId) {
+            if (!noteId) return 0;
+            const positions = getScrollPositions();
+            return positions[noteId] || 0; // Default to 0 if not found
+        }
+        // --- End Scroll Position --- 
 
         // Save the current note
         async function saveCurrentNote() {
@@ -1186,7 +1249,12 @@
             if (noteIndex !== -1) {
                 notes[noteIndex].title = finalTitle;
                 notes[noteIndex].content = content;
-                renderNotesList(); // Update title in sidebar immediately
+                notes[noteIndex].updated_at = new Date().toISOString(); // Update timestamp
+                
+                // Re-sort the notes array after updating
+                notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                
+                renderNotesList(); // Update title/order in sidebar immediately
             }
 
             if (currentToken) {
@@ -1215,6 +1283,11 @@
                         saveStatusDot.classList.remove('visible');
                     }, 2000); // Hide after 2 seconds
 
+                    // Save scroll position after successful server save
+                    if (contentInput) {
+                        saveScrollPosition(currentNoteId, contentInput.scrollTop);
+                    }
+
                 } catch (error) {
                     showToast(error.message, 'error');
                     // Indicate error with red dot
@@ -1235,6 +1308,10 @@
                 }, 2000); 
                 
                 console.log("Note saved locally");
+                 // Save scroll position after successful local save
+                if (contentInput) {
+                    saveScrollPosition(currentNoteId, contentInput.scrollTop);
+                }
             }
         }
 
@@ -1284,8 +1361,9 @@
             
             // Select next note or show empty state
             if (currentNoteId === noteId) {
+                localStorage.removeItem('lastOpenNoteId'); // Clear last opened if it was deleted
                 if (notes.length > 0) {
-                    selectNote(notes[0].id);
+                    selectNote(notes[0].id); // Select the new top note
                 } else {
                     currentNoteId = null;
                     renderEmptyNoteView();
