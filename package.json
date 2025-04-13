@@ -11,9 +11,12 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.1",
+    "pg": "^8.14.1",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {

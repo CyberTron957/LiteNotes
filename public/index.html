@@ -420,7 +420,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            height: 100vh; 
             color: var(--text-secondary);
             text-align: center;
             padding: 2rem;
@@ -650,6 +650,8 @@
                 <button id="login-button" class="btn btn-primary">Sign In</button>
                 <div class="auth-footer">
                     Don't have an account? <span id="show-register" class="auth-link">Register</span>
+                    <br>
+                    <span id="show-forgot-password" class="auth-link" style="margin-top: 10px; display: inline-block;">Forgot Password?</span>
                 </div>
             </div>
             <div id="register-form" style="display: none;">
@@ -661,9 +663,27 @@
                     <label for="reg-password" class="form-label">Password</label>
                     <input type="password" id="reg-password" class="form-input" placeholder="Choose a password">
                 </div>
+                <div class="form-group">
+                    <label for="reg-email" class="form-label">Email (Optional - for password recovery)</label>
+                    <input type="email" id="reg-email" class="form-input" placeholder="Enter your email (optional)">
+                </div>
                 <button id="register-button" class="btn btn-primary">Create Account</button>
                 <div class="auth-footer">
                     Already have an account? <span id="show-login" class="auth-link">Sign In</span>
+                </div>
+            </div>
+            <div id="forgot-password-form" style="display: none;">
+                <div class="auth-header">
+                    <h1>Reset Password</h1>
+                    <p class="auth-subtitle">Enter your email to receive a reset link.</p>
+                </div>
+                <div class="form-group">
+                    <label for="forgot-email" class="form-label">Email</label>
+                    <input type="email" id="forgot-email" class="form-input" placeholder="Enter your account email">
+                </div>
+                <button id="forgot-password-button" class="btn btn-primary">Send Reset Link</button>
+                <div class="auth-footer">
+                    Remember your password? <span id="show-login-from-forgot" class="auth-link">Sign In</span>
                 </div>
             </div>
         </div>
@@ -730,6 +750,10 @@
         const authModal = document.getElementById('auth-modal');
         const modalCloseBtn = document.getElementById('modal-close-btn');
         const modalTitle = document.getElementById('modal-title');
+        const showForgotPassword = document.getElementById('show-forgot-password');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const forgotPasswordButton = document.getElementById('forgot-password-button');
+        const showLoginFromForgot = document.getElementById('show-login-from-forgot');
 
         // Global variables
         let currentUser = null;
@@ -744,12 +768,14 @@
         showRegister.addEventListener('click', () => {
             loginForm.style.display = 'none';
             registerForm.style.display = 'block';
+            forgotPasswordForm.style.display = 'none'; // Hide forgot form
             modalTitle.textContent = 'Register'; // Update modal title
         });
 
         showLogin.addEventListener('click', () => {
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
+            forgotPasswordForm.style.display = 'none'; // Hide forgot form
             modalTitle.textContent = 'Sign In'; // Update modal title
         });
 
@@ -769,8 +795,28 @@
             // Ensure login form is visible by default when modal opens
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
+            forgotPasswordForm.style.display = 'none'; // Hide forgot form
             modalTitle.textContent = 'Sign In'; 
         });
+
+        // Show Forgot Password form
+        showForgotPassword.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            forgotPasswordForm.style.display = 'block';
+            modalTitle.textContent = 'Reset Password'; 
+        });
+
+        // Show Login from Forgot Password form
+        showLoginFromForgot.addEventListener('click', () => {
+            forgotPasswordForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            modalTitle.textContent = 'Sign In';
+        });
+
+        // Forgot Password button action
+        forgotPasswordButton.addEventListener('click', requestPasswordReset);
 
         // Close login modal
         modalCloseBtn.addEventListener('click', () => {
@@ -938,19 +984,35 @@
         async function register() {
             const username = document.getElementById('reg-username').value;
             const password = document.getElementById('reg-password').value;
+            const email = document.getElementById('reg-email').value; // Get email value
             
-            if (!username || !password) {
-                showToast('Please enter both username and password', 'error');
+            // Basic Frontend Validation (already done mostly on backend, but good practice)
+            if (!username || username.length < 3) {
+                showToast('Username must be at least 3 characters', 'error');
+                return;
+            }
+            if (!password || password.length < 7) {
+                showToast('Password must be at least 7 characters', 'error');
+                return;
+            }
+            // Basic email format validation (optional)
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Invalid email format', 'error');
                 return;
             }
             
             try {
+                const body = { username, password };
+                if (email) {
+                    body.email = email; // Include email if provided
+                }
+
                 const response = await fetch('/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify(body) // Send body object
                 });
                 
                 const data = await response.json();
@@ -964,6 +1026,7 @@
                 // Switch back to login in the modal
                 registerForm.style.display = 'none';
                 loginForm.style.display = 'block';
+                forgotPasswordForm.style.display = 'none'; // Hide forgot form
                 modalTitle.textContent = 'Sign In';
                 
                 // Auto-fill login fields in the modal
@@ -1468,6 +1531,41 @@
             // Wait for all uploads to attempt
             await Promise.all(uploadPromises);
             console.log("Local note merge process finished.");
+        }
+
+        // Request Password Reset function
+        async function requestPasswordReset() {
+            const email = document.getElementById('forgot-email').value;
+            if (!email) {
+                showToast('Please enter your email address', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                     // Even on failure from backend, show generic message to avoid revealing info
+                     showToast('If an account exists for that email, a reset link has been sent.', 'success');
+                } else {
+                     showToast(data.message, 'success');
+                }
+
+                // Optionally hide modal or switch back to login after request
+                authModal.classList.remove('visible'); 
+
+            } catch (error) {
+                console.error('Forgot password error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
         }
 
         // Initialize the app
