@@ -5,25 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FastNotes - Minimalist Notes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <style>
         :root {
-            --bg-primary: #101010;
-            --bg-secondary: #252525;
-            --text-primary: #e0e0e0;
+            /* Dark theme (default) */
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
             --text-secondary: #a0a0a0;
-            --accent: #525CEB;
-            --border: #333333;
-            --hover: #303030;
-            --danger: #e74c3c;
+            --accent: #ffffff;
+            --border: #2a2a2a;
+            --hover: #2a2a2a;
+            --danger: #ffffff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             --radius: 8px;
+        }
+
+        /* Light theme */
+        .light-mode {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #0f0f0f;
+            --text-secondary: #555555;
+            --border: #e0e0e0;
+            --hover: #f0f0f0;
+            --danger: #0f0f0f;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             transition: all 0.2s ease;
         }
 
@@ -46,11 +60,11 @@
         .sidebar {
             width: 250px;
             background-color: var(--bg-primary);
-            border-right: none;
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: none;
             transition: margin-left 0.3s ease;
             z-index: 5;
             padding-bottom: 20px;
@@ -92,19 +106,20 @@
             background-color: var(--bg-secondary);
             padding: 12px;
             border-radius: var(--radius);
+            border: 1px solid var(--border);
         }
 
         .user-avatar {
             width: 32px;
             height: 32px;
             border-radius: var(--radius);
-            background-color: var(--accent);
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--text-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--text-primary);
             font-weight: bold;
-            box-shadow: var(--shadow);
         }
 
         .username {
@@ -133,25 +148,27 @@
         .notes-list {
             padding: 0.5rem 1rem;
             flex: 1;
+            margin-bottom: 60px;
         }
 
         .create-note {
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            color: var(--text-primary);
+            color: var(--bg-primary);
             cursor: pointer;
             border-radius: var(--radius);
             margin: 0.5rem 0 1rem;
             transition: all 0.2s;
-            background-color: var(--accent);
-            box-shadow: var(--shadow);
+            background-color: var(--text-primary);
+            box-shadow: none;
             font-weight: 500;
+            border: none;
         }
 
         .create-note:hover {
-            transform: translateY(0);
-            filter: brightness(1.05);
+            transform: translateY(-2px);
+            background-color: #f0f0f0;
         }
 
         .create-note i {
@@ -168,14 +185,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             transition: all 0.2s;
+            border-left: 2px solid transparent;
         }
 
         .note-item:hover, .note-item.active {
             background-color: var(--hover);
-            transform: translateX(0);
+            border-left: 2px solid var(--text-primary);
         }
     
-
         .note-content {
             flex: 1;
             display: flex;
@@ -215,13 +232,13 @@
         }
         
         .note-editor::-webkit-scrollbar-thumb {
-            background-color: var(--bg-secondary);
+            background-color: var(--border);
             border-radius: 4px;
             border: 2px solid var(--bg-primary);
         }
 
         .note-editor::-webkit-scrollbar-thumb:hover {
-            background-color: var(--hover);
+            background-color: var(--text-secondary);
         }
 
         /* Style first line (Title) - May have limited browser support */
@@ -239,7 +256,7 @@
             align-items: center;
             height: 100vh;
             background-color: var(--bg-primary);
-            background-image: radial-gradient(circle at 50% 30%, rgba(82, 92, 235, 0.1), transparent 70%);
+            background-image: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.05), transparent 70%);
         }
 
         .auth-box {
@@ -249,6 +266,7 @@
             padding: 2.5rem;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.5s ease-out;
+            border: 1px solid var(--border);
         }
         
         @keyframes fadeIn {
@@ -265,10 +283,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent), #8A94FF);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-primary);
         }
 
         .auth-subtitle {
@@ -292,18 +307,17 @@
             width: 100%;
             padding: 12px;
             background-color: var(--bg-primary);
-            border: 1px solid transparent;
+            border: 1px solid var(--border);
             border-radius: var(--radius);
             color: var(--text-primary);
             font-size: 1rem;
             transition: all 0.2s;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(82, 92, 235, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.15);
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .btn {
@@ -321,21 +335,19 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #8A94FF);
-            color: white;
-            box-shadow: 0 4px 15px rgba(82, 92, 235, 0.3);
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+            box-shadow: none;
         }
 
         .btn-primary:hover {
-            filter: brightness(1.1);
+            background-color: #f0f0f0;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(82, 92, 235, 0.4);
         }
         
         .btn-primary:active {
             transform: translateY(1px);
-            filter: brightness(0.95);
-            box-shadow: 0 2px 10px rgba(82, 92, 235, 0.3);
+            background-color: #e0e0e0;
         }
 
         .auth-footer {
@@ -346,7 +358,7 @@
         }
 
         .auth-link {
-            color: var(--accent);
+            color: var(--text-primary);
             text-decoration: none;
             cursor: pointer;
             font-weight: 500;
@@ -354,7 +366,6 @@
         }
         
         .auth-link:hover {
-            color: #8A94FF;
             text-decoration: underline;
         }
 
@@ -364,7 +375,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(16, 16, 16, 0.8);
+            background-color: rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -377,7 +388,7 @@
             height: 40px;
             border-radius: 50%;
             border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent);
+            border-top-color: var(--text-primary);
             animation: spin 1s linear infinite;
         }
 
@@ -393,7 +404,7 @@
             background-color: var(--bg-secondary);
             color: var(--text-primary);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
             z-index: 1000;
             opacity: 0;
             transform: translateY(10px);
@@ -407,11 +418,11 @@
         }
 
         .toast.success {
-            border-left: 4px solid #4CAF50;
+            border-left: 4px solid var(--text-primary);
         }
 
         .toast.error {
-            border-left: 4px solid #F44336;
+            border-left: 4px solid var(--text-primary);
         }
 
         /* Empty state */
@@ -431,7 +442,7 @@
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.5;
-            color: var(--accent);
+            color: var(--text-primary);
         }
 
         .empty-state h2 {
@@ -447,11 +458,11 @@
         
         .sidebar-toggle {
             position: absolute;
-            left: 250px;
+            left: 210px;
             bottom: 20px;
             background: var(--bg-secondary);
-            width: 28px;
-            height: 28px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -459,14 +470,48 @@
             cursor: pointer;
             z-index: 10;
             transition: all 0.3s;
-            border: none;
-            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-right: 10px;
         }
 
         .sidebar-toggle i {
-            font-size: 12px;
-            color: var(--accent);
+            font-size: 16px;
+            color: var(--text-primary);
             transition: transform 0.3s;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            background: var(--bg-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+            border: 1px solid var(--border);
+            margin-right: 10px;
+        }
+
+        .theme-toggle i {
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        .container.sidebar-hidden .theme-toggle {
+            left: 64px;
+            opacity: 0;
+            visibility: hidden;
         }
 
         .container.sidebar-hidden .sidebar {
@@ -479,7 +524,6 @@
 
         .container.sidebar-hidden .sidebar-toggle {
             left: 16px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         .container.sidebar-hidden .sidebar-toggle i {
@@ -505,17 +549,102 @@
             align-items: center;
             justify-content: center;
             background-color: var(--bg-secondary);
-            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
         }
 
         .delete-note:hover {
-            color: var(--danger);
-            transform: translateY(0);
+            color: var(--text-primary);
+            transform: translateY(-2px);
         }
 
         /* Show delete button only when sidebar is visible */
         .container:not(.sidebar-hidden) .note-actions .delete-note {
             display: flex;
+        }
+
+        /* Save Status Dot Styles */
+        .save-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            opacity: 0;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .save-status-dot.visible {
+            opacity: 1;
+        }
+
+        .save-status-dot.saving {
+            background-color: var(--text-secondary);
+        }
+        
+        .save-status-dot.saved {
+            background-color: var(--text-primary);
+        }
+
+        .save-status-dot.error {
+            background-color: var(--text-primary);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            width: 380px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-primary);
         }
 
         /* Responsive */
@@ -542,90 +671,6 @@
             .note-title {
                 font-size: 2rem;
             }
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(16, 16, 16, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            backdrop-filter: blur(4px);
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            width: 380px;
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-            position: relative;
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .modal-close-btn:hover {
-            color: var(--text-primary);
-        }
-
-        /* Save Status Dot Styles */
-        .save-status-dot {
-            width: 8px; /* Slightly larger */
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--text-secondary);
-            opacity: 0;
-            transition: opacity 0.3s ease, background-color 0.3s ease;
-            position: fixed; /* Fixed positioning */
-            bottom: 20px;   /* Position from bottom */
-            right: 20px;    /* Position from right */
-            z-index: 1001;  /* Ensure it's above most things */
-        }
-
-        .save-status-dot.visible {
-            opacity: 1;
-        }
-
-        .save-status-dot.saving {
-            background-color: var(--accent); /* Blue for saving */
-        }
-        
-        .save-status-dot.saved {
-            background-color: #4CAF50; /* Green for saved */
-        }
-
-        .save-status-dot.error {
-            background-color: var(--danger); /* Red for error */
         }
     </style>
 </head>
@@ -706,6 +751,10 @@
             <div class="notes-list" id="notes-list">
                 <!-- Notes will be listed here -->
             </div>
+            <!-- Theme Toggle Button -->
+            <div class="theme-toggle" id="theme-toggle">
+                <i class="fas fa-sun"></i>
+            </div>
         </div>
         <div class="sidebar-toggle" id="sidebar-toggle">
             <i class="fas fa-chevron-left"></i>
@@ -751,6 +800,7 @@
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const forgotPasswordButton = document.getElementById('forgot-password-button');
         const showLoginFromForgot = document.getElementById('show-login-from-forgot');
+        const themeToggle = document.getElementById('theme-toggle');
 
         // Global variables
         let currentUser = null;
@@ -760,6 +810,7 @@
         let saveTimeout = null;
         let statusDotFadeTimeout = null; // Timeout ID for dot fade
         let isSidebarHidden = true; // Default to hidden
+        let isDarkMode = true; // Default to dark mode
 
         // Event Listeners
         showRegister.addEventListener('click', () => {
@@ -832,8 +883,19 @@
             }
         });
 
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', toggleTheme);
+
         // Check auth status and initialize app
         async function initializeApp() {
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                isDarkMode = false;
+                document.body.classList.add('light-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            
             // Restore sidebar state first
             const storedSidebarState = localStorage.getItem('sidebarState');
             if (storedSidebarState) {
@@ -1617,6 +1679,21 @@
                 // Re-enable button and restore text on error
                 forgotButton.disabled = false;
                 forgotButton.textContent = 'Send Reset Link';
+            }
+        }
+
+        // Toggle theme function
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            
+            if (isDarkMode) {
+                document.body.classList.remove('light-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.add('light-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
             }
         }
 
