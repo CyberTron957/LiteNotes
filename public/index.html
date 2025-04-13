@@ -62,8 +62,9 @@
             flex-direction: column;
             background-color: var(--bg-primary);
             overflow-y: auto;
-            padding: 0 15px;
+            padding: 0;
             position: relative;
+            width: 100%;
         }
 
         .sidebar-header {
@@ -118,7 +119,7 @@
 
         .logout-btn:hover {
             color: var(--text-primary);
-            background-color: var(--hover);
+            background-color: transparent;
         }
 
         .notes-list {
@@ -141,8 +142,8 @@
         }
 
         .create-note:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(0);
+            filter: brightness(1.05);
         }
 
         .create-note i {
@@ -163,7 +164,7 @@
 
         .note-item:hover, .note-item.active {
             background-color: var(--hover);
-            transform: translateX(3px);
+            transform: translateX(0);
         }
         
         .note-item.active {
@@ -192,7 +193,6 @@
         }
         
         .note-title:focus {
-            background-color: rgba(255, 255, 255, 0.05);
             padding: 10px;
         }
 
@@ -204,6 +204,9 @@
         .note-content {
             padding: 1rem 2rem;
             flex: 1;
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 150px);
         }
 
         .note-editor {
@@ -216,13 +219,12 @@
             line-height: 1.6;
             resize: none;
             outline: none;
-            padding: 10px 0;
+            padding: 10px;
             border-radius: var(--radius);
         }
         
         .note-editor:focus {
-            background-color: rgba(255, 255, 255, 0.02);
-            padding: 10px;
+            background-color: transparent;
         }
 
         .auth-container {
@@ -524,7 +526,7 @@
 
         .delete-note:hover {
             color: var(--danger);
-            transform: translateY(-2px);
+            transform: translateY(0);
         }
 
         /* Responsive */
@@ -598,15 +600,18 @@
     </div>
 
     <!-- Main App -->
-    <div id="app-container" class="container" style="display: none;">
+    <div id="app-container" class="container sidebar-hidden" style="display: none;">
         <div class="sidebar">
             <div class="sidebar-header">
-                <div class="user-section">
+                <div id="user-info-section" class="user-section" style="display: none;">
                     <div class="user-avatar" id="user-initial"></div>
                     <div class="username" id="display-username">Username</div>
                     <div class="logout-btn" id="logout-btn" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
                     </div>
+                </div>
+                <div id="signin-prompt" style="display: none;">
+                    <button id="show-login-btn" class="btn btn-primary">Sign in to Sync</button>
                 </div>
                 <div class="create-note" id="create-note-btn">
                     <i class="fas fa-plus"></i> New Note
@@ -650,6 +655,9 @@
         const toast = document.getElementById('toast');
         const logoutBtn = document.getElementById('logout-btn');
         const sidebarToggle = document.getElementById('sidebar-toggle');
+        const userInfoSection = document.getElementById('user-info-section');
+        const signinPrompt = document.getElementById('signin-prompt');
+        const showLoginBtn = document.getElementById('show-login-btn');
 
         // Global variables
         let currentUser = null;
@@ -657,6 +665,7 @@
         let notes = [];
         let currentNoteId = null;
         let saveTimeout = null;
+        let isSidebarHidden = true; // Default to hidden
 
         // Event Listeners
         showRegister.addEventListener('click', () => {
@@ -679,22 +688,68 @@
         // Toggle sidebar
         sidebarToggle.addEventListener('click', toggleSidebar);
 
-        // Check if the user is already logged in (token in localStorage)
-        function checkAuth() {
+        // Show login form from prompt
+        showLoginBtn.addEventListener('click', () => {
+            appContainer.style.display = 'none';
+            authContainer.style.display = 'flex';
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        });
+
+        // Check auth status and initialize app
+        function initializeApp() {
             const token = localStorage.getItem('token');
             const username = localStorage.getItem('username');
-            
+            const storedSidebarState = localStorage.getItem('sidebarState');
+
+            if (storedSidebarState) {
+                isSidebarHidden = storedSidebarState === 'hidden';
+                if (isSidebarHidden) {
+                    appContainer.classList.add('sidebar-hidden');
+                } else {
+                    appContainer.classList.remove('sidebar-hidden');
+                }
+            } else {
+                // Default is hidden, already set in HTML
+                localStorage.setItem('sidebarState', 'hidden');
+            }
+
             if (token && username) {
+                // User is logged in
                 currentToken = token;
                 currentUser = username;
                 displayUsername.textContent = username;
                 userInitial.textContent = username.charAt(0).toUpperCase();
-                
+                userInfoSection.style.display = 'flex';
+                signinPrompt.style.display = 'none';
                 authContainer.style.display = 'none';
                 appContainer.style.display = 'flex';
-                
-                fetchNotes();
+                fetchNotes(); // Fetch notes from server
+            } else {
+                // User is not logged in
+                userInfoSection.style.display = 'none';
+                signinPrompt.style.display = 'block';
+                authContainer.style.display = 'none'; // Hide auth initially
+                appContainer.style.display = 'flex';   // Show app immediately
+                loadLocalNotes(); // Load notes from local storage
             }
+        }
+
+        // Load notes from local storage
+        function loadLocalNotes() {
+            const localNotes = localStorage.getItem('localNotes');
+            notes = localNotes ? JSON.parse(localNotes) : [];
+            renderNotesList();
+            if (notes.length > 0) {
+                selectNote(notes[0].id);
+            } else {
+                renderEmptyNoteView();
+            }
+        }
+
+        // Save notes to local storage
+        function saveLocalNotes() {
+            localStorage.setItem('localNotes', JSON.stringify(notes));
         }
 
         // Login function
@@ -705,6 +760,14 @@
             if (!username || !password) {
                 showToast('Please enter both username and password', 'error');
                 return;
+            }
+
+            // Confirm overwrite if local notes exist
+            const localNotesExist = localStorage.getItem('localNotes');
+            if (localNotesExist && localNotesExist !== '[]') {
+                if (!confirm('Logging in will replace unsaved local notes with your synced notes. Continue?')) {
+                    return;
+                }
             }
             
             try {
@@ -732,11 +795,8 @@
                 displayUsername.textContent = username;
                 userInitial.textContent = username.charAt(0).toUpperCase();
                 
-                // Switch from auth to app view
-                authContainer.style.display = 'none';
-                appContainer.style.display = 'flex';
-                
-                // Fetch notes
+                // Clear local notes and fetch server notes
+                localStorage.removeItem('localNotes');
                 fetchNotes();
                 
                 showToast('Logged in successfully', 'success');
@@ -784,8 +844,10 @@
             }
         }
 
-        // Fetch all notes
+        // Fetch all notes (from server)
         async function fetchNotes() {
+            if (!currentToken) return; // Should not happen if called correctly
+
             try {
                 const response = await fetch('/notes', {
                     headers: {
@@ -830,6 +892,8 @@
                     noteItem.classList.add('active');
                 }
                 noteItem.textContent = note.title || 'Untitled';
+                // Ensure note IDs are unique for local notes
+                noteItem.dataset.noteId = note.id;
                 noteItem.addEventListener('click', () => selectNote(note.id));
                 notesList.appendChild(noteItem);
             });
@@ -838,10 +902,17 @@
         // Select a note
         function selectNote(noteId) {
             currentNoteId = noteId;
+            // Find note by ID (works for both server and local)
             const selectedNote = notes.find(note => note.id === noteId);
             
-            renderNoteView(selectedNote);
-            renderNotesList(); // Update the active state in the list
+            if (selectedNote) {
+                renderNoteView(selectedNote);
+                renderNotesList(); // Update the active state in the list
+            } else {
+                // Handle case where note might have been deleted
+                currentNoteId = null;
+                renderEmptyNoteView();
+            }
         }
 
         // Render the note editor
@@ -900,38 +971,52 @@
 
         // Create a new note
         async function createNewNote() {
-            try {
-                const response = await fetch('/notes', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': currentToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
+            if (currentToken) {
+                // Logged in: Create on server
+                try {
+                    const response = await fetch('/notes', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': currentToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: 'Untitled',
+                            content: ''
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to create note on server');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    const newNote = {
+                        id: data.id,
                         title: 'Untitled',
-                        content: ''
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to create note');
+                        content: '',
+                        created_at: new Date().toISOString()
+                    };
+                    
+                    notes.unshift(newNote);
+                    renderNotesList();
+                    selectNote(newNote.id);
+                } catch (error) {
+                    showToast(error.message, 'error');
                 }
-                
-                const data = await response.json();
-                
-                // Add the new note to our array
+            } else {
+                // Not logged in: Create locally
                 const newNote = {
-                    id: data.id,
+                    id: `local-${Date.now()}`, // Simple unique local ID
                     title: 'Untitled',
                     content: '',
                     created_at: new Date().toISOString()
                 };
-                
                 notes.unshift(newNote);
+                saveLocalNotes(); // Save to local storage
                 renderNotesList();
                 selectNote(newNote.id);
-            } catch (error) {
-                showToast(error.message, 'error');
             }
         }
 
@@ -969,45 +1054,51 @@
             const title = titleInput.value || 'Untitled';
             const content = contentInput.value;
             
-            try {
-                const response = await fetch(`/notes/${currentNoteId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': currentToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ title, content })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save note');
+            // Update local array first for responsiveness
+            const noteIndex = notes.findIndex(note => note.id === currentNoteId);
+            if (noteIndex !== -1) {
+                notes[noteIndex].title = title;
+                notes[noteIndex].content = content;
+                renderNotesList(); // Update title in sidebar immediately
+            }
+
+            if (currentToken) {
+                // Logged in: Save to server
+                try {
+                    const response = await fetch(`/notes/${currentNoteId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': currentToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ title, content })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to save note to server');
+                    }
+                    
+                    // Update save indicator
+                    const savingIndicator = document.getElementById('saving-indicator');
+                    const saveStatus = document.getElementById('save-status');
+                    if (savingIndicator) {
+                        savingIndicator.style.display = 'none';
+                    }
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    // Indicate error
+                    const savingIndicator = document.getElementById('saving-indicator');
+                    const saveStatus = document.getElementById('save-status');
+                    if (savingIndicator) {
+                        savingIndicator.style.display = 'flex'; // Show indicator on error
+                        saveStatus.textContent = 'Error saving';
+                    }
                 }
-                
-                // Update our local notes array
-                const noteIndex = notes.findIndex(note => note.id === currentNoteId);
-                if (noteIndex !== -1) {
-                    notes[noteIndex].title = title;
-                    notes[noteIndex].content = content;
-                }
-                
-                renderNotesList();
-                
-                // Update save indicator
-                const savingIndicator = document.getElementById('saving-indicator');
-                const saveStatus = document.getElementById('save-status');
-                
-                if (savingIndicator) {
-                    savingIndicator.style.display = 'none';
-                    saveStatus.textContent = 'All changes saved';
-                }
-            } catch (error) {
-                showToast(error.message, 'error');
-                
-                // Update save indicator to show error
-                const saveStatus = document.getElementById('save-status');
-                if (saveStatus) {
-                    saveStatus.textContent = 'Error saving';
-                }
+            } else {
+                // Not logged in: Save locally
+                saveLocalNotes();
+                // Optionally show a local save indicator if needed
+                console.log("Note saved locally");
             }
         }
 
@@ -1024,36 +1115,48 @@
 
         // Delete note function
         async function deleteNote(noteId) {
-            try {
-                const response = await fetch(`/notes/${noteId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': currentToken
+             if (currentToken) {
+                // Logged in: Delete from server
+                try {
+                    const response = await fetch(`/notes/${noteId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': currentToken
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to delete note from server');
                     }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to delete note');
+                    
+                    // Remove note from local array (already done below)
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    return; // Stop if server delete failed
                 }
-                
-                // Remove note from array
-                notes = notes.filter(note => note.id !== noteId);
-                
-                // Update UI
-                renderNotesList();
-                
-                // If we have notes left, select the first one
+            }
+            
+            // Remove note from local array (for both logged in and local)
+            notes = notes.filter(note => note.id !== noteId);
+            
+            if (!currentToken) {
+                saveLocalNotes(); // Update local storage if not logged in
+            }
+            
+            // Update UI
+            renderNotesList();
+            
+            // Select next note or show empty state
+            if (currentNoteId === noteId) {
                 if (notes.length > 0) {
                     selectNote(notes[0].id);
                 } else {
                     currentNoteId = null;
                     renderEmptyNoteView();
                 }
-                
-                showToast('Note deleted successfully', 'success');
-            } catch (error) {
-                showToast(error.message, 'error');
             }
+            
+            showToast('Note deleted successfully', 'success');
         }
         
         // Logout function
@@ -1075,6 +1178,10 @@
                 notes = [];
                 currentNoteId = null;
                 
+                // Clear local data (including local notes)
+                localStorage.removeItem('localNotes');
+                localStorage.removeItem('sidebarState'); // Clear sidebar state too
+                
                 // Switch to auth view
                 authContainer.style.display = 'flex';
                 appContainer.style.display = 'none';
@@ -1087,6 +1194,8 @@
                 // Clear local data anyway
                 localStorage.removeItem('token');
                 localStorage.removeItem('username');
+                localStorage.removeItem('localNotes');
+                localStorage.removeItem('sidebarState'); // Clear sidebar state too
                 
                 // Switch to auth view
                 authContainer.style.display = 'flex';
@@ -1096,11 +1205,13 @@
         
         // Toggle sidebar function
         function toggleSidebar() {
+            isSidebarHidden = !isSidebarHidden;
             appContainer.classList.toggle('sidebar-hidden');
+            localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
         }
 
         // Initialize the app
-        checkAuth();
+        initializeApp();
     </script>
 </body>
 </html>
