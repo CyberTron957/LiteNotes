@@ -65,6 +65,8 @@
             padding: 0;
             position: relative;
             width: 100%;
+            padding-left: 15px;
+            transition: padding-left 0.3s ease;
         }
 
         .sidebar-header {
@@ -379,31 +381,6 @@
             to { transform: rotate(360deg); }
         }
 
-        .save-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            padding: 5px 10px;
-            border-radius: var(--radius);
-            background-color: var(--bg-secondary);
-        }
-
-        .saving-dot {
-            width: 6px;
-            height: 6px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-
         .toast {
             position: fixed;
             bottom: 24px;
@@ -467,7 +444,7 @@
         .sidebar-toggle {
             position: absolute;
             left: 250px;
-            top: 20px;
+            bottom: 20px;
             background: var(--bg-secondary);
             width: 28px;
             height: 28px;
@@ -490,6 +467,10 @@
 
         .container.sidebar-hidden .sidebar {
             margin-left: -250px;
+        }
+
+        .container.sidebar-hidden .main-content {
+            padding-left: 50px;
         }
 
         .container.sidebar-hidden .sidebar-toggle {
@@ -522,11 +503,17 @@
             justify-content: center;
             background-color: var(--bg-secondary);
             box-shadow: var(--shadow);
+            display: none;
         }
 
         .delete-note:hover {
             color: var(--danger);
             transform: translateY(0);
+        }
+
+        /* Show delete button only when sidebar is visible */
+        .container:not(.sidebar-hidden) .note-actions .delete-note {
+            display: flex;
         }
 
         /* Responsive */
@@ -558,15 +545,100 @@
                 font-size: 2rem;
             }
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(16, 16, 16, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            width: 380px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Save Status Dot Styles */
+        .save-status-dot {
+            width: 8px; /* Slightly larger */
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            opacity: 0;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            position: fixed; /* Fixed positioning */
+            bottom: 20px;   /* Position from bottom */
+            right: 20px;    /* Position from right */
+            z-index: 1001;  /* Ensure it's above most things */
+        }
+
+        .save-status-dot.visible {
+            opacity: 1;
+        }
+
+        .save-status-dot.saving {
+            background-color: var(--accent); /* Blue for saving */
+        }
+        
+        .save-status-dot.saved {
+            background-color: #4CAF50; /* Green for saved */
+        }
+
+        .save-status-dot.error {
+            background-color: var(--danger); /* Red for error */
+        }
     </style>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="auth-container" class="auth-container">
-        <div class="auth-box">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
             <div class="auth-header">
-                <h1>Notely</h1>
-                <p class="auth-subtitle">Your beautiful note-taking space</p>
+                <h1 id="modal-title">Sign In</h1>
+                <p class="auth-subtitle">Sync your notes across devices</p>
             </div>
             <div id="login-form">
                 <div class="form-group">
@@ -639,7 +711,6 @@
 
     <script>
         // DOM Elements
-        const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
@@ -658,6 +729,9 @@
         const userInfoSection = document.getElementById('user-info-section');
         const signinPrompt = document.getElementById('signin-prompt');
         const showLoginBtn = document.getElementById('show-login-btn');
+        const authModal = document.getElementById('auth-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalTitle = document.getElementById('modal-title');
 
         // Global variables
         let currentUser = null;
@@ -665,17 +739,20 @@
         let notes = [];
         let currentNoteId = null;
         let saveTimeout = null;
+        let statusDotFadeTimeout = null; // Timeout ID for dot fade
         let isSidebarHidden = true; // Default to hidden
 
         // Event Listeners
         showRegister.addEventListener('click', () => {
             loginForm.style.display = 'none';
             registerForm.style.display = 'block';
+            modalTitle.textContent = 'Register'; // Update modal title
         });
 
         showLogin.addEventListener('click', () => {
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
+            modalTitle.textContent = 'Sign In'; // Update modal title
         });
 
         loginButton.addEventListener('click', login);
@@ -688,12 +765,25 @@
         // Toggle sidebar
         sidebarToggle.addEventListener('click', toggleSidebar);
 
-        // Show login form from prompt
+        // Show login modal
         showLoginBtn.addEventListener('click', () => {
-            appContainer.style.display = 'none';
-            authContainer.style.display = 'flex';
-            loginForm.style.display = 'block';
+            authModal.classList.add('visible');
+            // Ensure login form is visible by default when modal opens
             registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            modalTitle.textContent = 'Sign In'; 
+        });
+
+        // Close login modal
+        modalCloseBtn.addEventListener('click', () => {
+            authModal.classList.remove('visible');
+        });
+
+        authModal.addEventListener('click', (event) => {
+            // Close if clicked outside the modal content
+            if (event.target === authModal) {
+                authModal.classList.remove('visible');
+            }
         });
 
         // Check auth status and initialize app
@@ -722,14 +812,13 @@
                 userInitial.textContent = username.charAt(0).toUpperCase();
                 userInfoSection.style.display = 'flex';
                 signinPrompt.style.display = 'none';
-                authContainer.style.display = 'none';
+                authModal.classList.remove('visible');
                 appContainer.style.display = 'flex';
                 fetchNotes(); // Fetch notes from server
             } else {
                 // User is not logged in
                 userInfoSection.style.display = 'none';
                 signinPrompt.style.display = 'block';
-                authContainer.style.display = 'none'; // Hide auth initially
                 appContainer.style.display = 'flex';   // Show app immediately
                 loadLocalNotes(); // Load notes from local storage
             }
@@ -762,10 +851,11 @@
                 return;
             }
 
-            // Confirm overwrite if local notes exist
-            const localNotesExist = localStorage.getItem('localNotes');
-            if (localNotesExist && localNotesExist !== '[]') {
-                if (!confirm('Logging in will replace unsaved local notes with your synced notes. Continue?')) {
+            // Confirm merge/upload if local notes exist
+            const localNotesRaw = localStorage.getItem('localNotes');
+            const localNotesExist = localNotesRaw && localNotesRaw !== '[]';
+            if (localNotesExist) {
+                if (!confirm('Logging in will attempt to upload your unsaved local notes to your account. Continue?')) {
                     return;
                 }
             }
@@ -794,12 +884,27 @@
                 
                 displayUsername.textContent = username;
                 userInitial.textContent = username.charAt(0).toUpperCase();
+                userInfoSection.style.display = 'flex';
+                signinPrompt.style.display = 'none';
                 
-                // Clear local notes and fetch server notes
+                // Close modal on successful login
+                authModal.classList.remove('visible');
+                
+                // Fetch server notes first
+                const serverNotes = await fetchNotes(); // fetchNotes needs to return the notes
+
+                // Attempt to merge local notes if they existed
+                if (localNotesExist && serverNotes) {
+                    await mergeLocalNotesWithServer(JSON.parse(localNotesRaw), serverNotes);
+                }
+
+                // Clear local notes *after* merge attempt
                 localStorage.removeItem('localNotes');
-                fetchNotes();
                 
-                showToast('Logged in successfully', 'success');
+                // Fetch the final merged list from the server
+                await fetchNotes(); 
+                
+                showToast('Logged in successfully & notes merged', 'success');
             } catch (error) {
                 showToast(error.message, 'error');
             }
@@ -832,11 +937,12 @@
                 
                 showToast('Account created successfully', 'success');
                 
-                // Switch back to login
+                // Switch back to login in the modal
                 registerForm.style.display = 'none';
                 loginForm.style.display = 'block';
+                modalTitle.textContent = 'Sign In';
                 
-                // Auto-fill login fields
+                // Auto-fill login fields in the modal
                 document.getElementById('username').value = username;
                 document.getElementById('password').value = password;
             } catch (error) {
@@ -846,7 +952,7 @@
 
         // Fetch all notes (from server)
         async function fetchNotes() {
-            if (!currentToken) return; // Should not happen if called correctly
+            if (!currentToken) return null; // Return null if not logged in
 
             try {
                 const response = await fetch('/notes', {
@@ -868,8 +974,10 @@
                 } else if (notes.length === 0) {
                     renderEmptyNoteView();
                 }
+                return notes; // Return the fetched notes
             } catch (error) {
                 showToast(error.message, 'error');
+                return null; // Return null on error
             }
         }
 
@@ -928,10 +1036,6 @@
                 <div class="note-header">
                     <input type="text" class="note-title" id="note-title" placeholder="Untitled" value="${note.title || ''}">
                     <div class="note-actions">
-                        <div class="save-indicator" id="saving-indicator" style="display: none;">
-                            <div class="saving-dot"></div>
-                            <span id="save-status">Saving...</span>
-                        </div>
                         <div class="delete-note" id="delete-note-btn" title="Delete note">
                             <i class="fas fa-trash"></i>
                         </div>
@@ -940,15 +1044,17 @@
                 <div class="note-content">
                     <textarea class="note-editor" id="note-content" placeholder="Start writing...">${note.content || ''}</textarea>
                 </div>
+                <div id="save-status-dot" class="save-status-dot"></div>
             `;
             
             // Add event listeners for auto-save
             const titleInput = document.getElementById('note-title');
             const contentInput = document.getElementById('note-content');
             const deleteNoteBtn = document.getElementById('delete-note-btn');
+            const saveStatusDot = document.getElementById('save-status-dot'); // Get the dot
             
-            titleInput.addEventListener('input', () => scheduleNoteSave());
-            contentInput.addEventListener('input', () => scheduleNoteSave());
+            titleInput.addEventListener('input', () => scheduleNoteSave(saveStatusDot));
+            contentInput.addEventListener('input', () => scheduleNoteSave(saveStatusDot));
             
             // Add delete note functionality
             deleteNoteBtn.addEventListener('click', () => {
@@ -1021,14 +1127,12 @@
         }
 
         // Schedule a note save (debounce)
-        function scheduleNoteSave() {
-            // Show saving indicator
-            const savingIndicator = document.getElementById('saving-indicator');
-            const saveStatus = document.getElementById('save-status');
-            
-            if (savingIndicator) {
-                savingIndicator.style.display = 'block';
-                saveStatus.textContent = 'Saving...';
+        function scheduleNoteSave(saveStatusDot) { // Pass the dot element
+            // Show saving indicator dot
+            if (saveStatusDot) {
+                clearTimeout(statusDotFadeTimeout); // Clear existing fade timeout
+                saveStatusDot.classList.remove('saved', 'error');
+                saveStatusDot.classList.add('saving', 'visible');
             }
             
             // Clear existing timeout
@@ -1048,8 +1152,9 @@
             
             const titleInput = document.getElementById('note-title');
             const contentInput = document.getElementById('note-content');
+            const saveStatusDot = document.getElementById('save-status-dot'); // Get dot again
             
-            if (!titleInput || !contentInput) return;
+            if (!titleInput || !contentInput || !saveStatusDot) return;
             
             const title = titleInput.value || 'Untitled';
             const content = contentInput.value;
@@ -1078,26 +1183,35 @@
                         throw new Error('Failed to save note to server');
                     }
                     
-                    // Update save indicator
-                    const savingIndicator = document.getElementById('saving-indicator');
-                    const saveStatus = document.getElementById('save-status');
-                    if (savingIndicator) {
-                        savingIndicator.style.display = 'none';
-                    }
+                    // Update save indicator dot to green (saved)
+                    saveStatusDot.classList.remove('saving', 'error');
+                    saveStatusDot.classList.add('saved', 'visible');
+
+                    // Set timeout to hide the dot after a delay
+                    clearTimeout(statusDotFadeTimeout);
+                    statusDotFadeTimeout = setTimeout(() => {
+                        saveStatusDot.classList.remove('visible');
+                    }, 2000); // Hide after 2 seconds
+
                 } catch (error) {
                     showToast(error.message, 'error');
-                    // Indicate error
-                    const savingIndicator = document.getElementById('saving-indicator');
-                    const saveStatus = document.getElementById('save-status');
-                    if (savingIndicator) {
-                        savingIndicator.style.display = 'flex'; // Show indicator on error
-                        saveStatus.textContent = 'Error saving';
-                    }
+                    // Indicate error with red dot
+                    saveStatusDot.classList.remove('saving', 'saved');
+                    saveStatusDot.classList.add('error', 'visible');
                 }
             } else {
                 // Not logged in: Save locally
                 saveLocalNotes();
-                // Optionally show a local save indicator if needed
+                // Update dot to indicate local save (green)
+                saveStatusDot.classList.remove('saving', 'error');
+                saveStatusDot.classList.add('saved', 'visible');
+                
+                // Set timeout to hide the dot after a delay
+                clearTimeout(statusDotFadeTimeout);
+                statusDotFadeTimeout = setTimeout(() => {
+                    saveStatusDot.classList.remove('visible');
+                }, 2000); 
+                
                 console.log("Note saved locally");
             }
         }
@@ -1182,9 +1296,10 @@
                 localStorage.removeItem('localNotes');
                 localStorage.removeItem('sidebarState'); // Clear sidebar state too
                 
-                // Switch to auth view
-                authContainer.style.display = 'flex';
-                appContainer.style.display = 'none';
+                // Reset UI to logged-out state
+                userInfoSection.style.display = 'none';
+                signinPrompt.style.display = 'block';
+                loadLocalNotes(); // Load any potentially remaining local notes (though usually cleared)
                 
                 showToast('Logged out successfully', 'success');
             } catch (error) {
@@ -1197,9 +1312,10 @@
                 localStorage.removeItem('localNotes');
                 localStorage.removeItem('sidebarState'); // Clear sidebar state too
                 
-                // Switch to auth view
-                authContainer.style.display = 'flex';
-                appContainer.style.display = 'none';
+                // Reset UI to logged-out state
+                userInfoSection.style.display = 'none';
+                signinPrompt.style.display = 'block';
+                loadLocalNotes();
             }
         }
         
@@ -1208,6 +1324,50 @@
             isSidebarHidden = !isSidebarHidden;
             appContainer.classList.toggle('sidebar-hidden');
             localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+        }
+
+        // Function to merge local notes with server
+        async function mergeLocalNotesWithServer(localNotes, serverNotes) {
+            console.log("Attempting to merge local notes...");
+            let uploadPromises = [];
+
+            for (const localNote of localNotes) {
+                // Check if a similar note exists on the server (simple title/content check)
+                const existsOnServer = serverNotes.some(serverNote => 
+                    serverNote.title === localNote.title && serverNote.content === localNote.content
+                );
+
+                if (!existsOnServer) {
+                    console.log(`Uploading local note: ${localNote.title}`);
+                    // If it doesn't exist, upload it
+                    uploadPromises.push(
+                        fetch('/notes', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': currentToken,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                title: localNote.title || 'Untitled', 
+                                content: localNote.content || '' 
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error(`Failed to upload local note: ${localNote.title}`);
+                            }
+                            return response;
+                        })
+                        .catch(error => {
+                             console.error(`Error uploading local note: ${localNote.title}`, error);
+                        })
+                    );
+                }
+            }
+
+            // Wait for all uploads to attempt
+            await Promise.all(uploadPromises);
+            console.log("Local note merge process finished.");
         }
 
         // Initialize the app
