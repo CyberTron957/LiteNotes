@@ -430,9 +430,9 @@ app.post('/forgot-password', async (req, res) => {
 
         // --- Send Email using Nodemailer ---
         const mailOptions = {
-            from: '"FastNotes App" <hello@demomailtrap.co>', // Placeholder sender
+            from: '"LiteNotes App" <hello@demomailtrap.co>', // Placeholder sender
             to: user.email, // Send to the user's actual email (Mailtrap will catch it)
-            subject: "Password Reset Request for FastNotes",
+            subject: "Password Reset Request for LiteNotes",
             text: `Hello ${user.username},\n\nPlease click on the following link, or paste it into your browser to complete the password reset process within one hour:\n\n${resetLink}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
             html: `<p>Hello ${user.username},</p>
                    <p>Please click on the following link to complete the password reset process within one hour:</p>

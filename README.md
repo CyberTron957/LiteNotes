@@ -1,6 +1,6 @@
-# FastNotes (Minimalist Notes App)
+# LiteNotes (Minimalist Notes App)
 
-FastNotes is a minimalist web-based notes application built with Node.js, Express.js, and SQLite. It allows users to create, edit, and delete notes with a clean, dark-themed interface. The application features JWT-based user authentication and local storage support for offline note-taking, with automatic merging of local notes upon login.
+LiteNotes is a minimalist web-based notes application built with Node.js, Express.js, and SQLite. It allows users to create, edit, and delete notes with a clean, dark-themed interface. The application features JWT-based user authentication and local storage support for offline note-taking, with automatic merging of local notes upon login.
 
 ## Features
 
