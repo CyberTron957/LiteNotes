@@ -759,30 +759,167 @@ body {
     color: var(--text-primary);
 }
 
-/* Responsive */
+/* Mobile Optimization */
 @media (max-width: 768px) {
+    /* Override the previous media query for better mobile experience */
     .container {
-        flex-direction: column;
+        flex-direction: row; /* Keep the row layout */
     }
-    
+
+    /* Full sidebar on mobile that slides in from left */
     .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 80%;
+        max-width: 300px;
+        /* Use -webkit-fill-available for better mobile height */
+        height: -webkit-fill-available;
+        height: 100vh; /* Fallback for browsers that don't support -webkit-fill-available */
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        border-bottom: none;
+        overflow-y: auto;
+    }
+
+    /* When sidebar is visible on mobile */
+    body.sidebar-visible .sidebar {
+        transform: translateX(0);
+    }
+
+    /* Overlay when sidebar is open */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+
+    body.sidebar-visible .sidebar-overlay {
+        display: block;
+    }
+
+    /* Optimize note editor for mobile */
+    .note-editor {
+        padding: 20px;
+        font-size: 16px; /* More readable on mobile */
+        padding-bottom: 30vh;
+    }
+
+    /* Position sidebar toggle for mobile */
+    .sidebar-toggle {
+        position: fixed;
+        left: auto;
+        right: 20px;
+        bottom: 20px;
+        background-color: var(--text-primary);
+        color: var(--bg-primary);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        z-index: 101; /* Ensure button is above sidebar (100) and overlay (99) */
+        border: none;
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container.sidebar-hidden .sidebar-toggle {
+        left: auto;
+        right: 20px;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .sidebar-toggle i {
+        color: var(--bg-primary);
+        font-size: 18px;
+    }
+
+    /* Adjust container padding */
+    .container.sidebar-hidden .main-content {
+        padding-left: 0;
         width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
+    }
+
+    /* Save status and UI elements positioning */
+    .save-status-dot {
+        bottom: 85px; /* Position above the sidebar toggle */
+        right: 25px;
+    }
+
+    /* Make delete note button always visible on mobile */
+    .delete-note {
+        display: flex;
+        top: 15px;
+        right: 15px;
+    }
+
+    /* Give more space for action buttons on mobile */
+    .note-actions {
+        top: 10px;
+        right: 10px;
     }
     
-    .sidebar-header {
-        padding: 1rem;
+    /* Adjust theme palette position for mobile */
+    .theme-palette {
+        /* Position it at the bottom of the screen, fixed position */
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        transform: none; /* Reset any potential transforms */
+        border-radius: 15px 15px 0 0; /* Rounded corners on top only */
+        
+        /* Make scrollable on mobile */
+        max-height: 80vh; /* Limit to 80% of viewport height */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        
+        /* Remove conflicting styles */
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        z-index: 110; /* Above sidebar overlay */
     }
     
-    .note-content {
-        padding: 1.5rem;
+    /* Close button for theme palette on mobile */
+    .theme-palette::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 5px;
+        background-color: var(--border);
+        border-radius: 5px;
+        margin: 0 auto 15px;
+    }
+
+    /* Ensure palette columns stack on mobile */
+    .palette-columns {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 500px) {
+    .palette-columns {
+        flex-direction: column;
+        gap: 20px;
     }
     
-    .note-title {
-        font-size: 2rem;
-    }
+    /* No need to override width here anymore, handled by max-width */
+    /* .theme-palette {
+        width: 250px; 
+    } */
 }
 
 /* Theme Toggle and Selector */
@@ -1129,4 +1266,16 @@ body {
 .background-name {
     font-size: 0.9rem;
     color: var(--text-primary);
+}
+
+/* Ensure mobile styles override the default settings */
+@media (max-width: 768px) {
+    /* Reset default position for theme palette on mobile */
+    .theme-palette {
+        /* Position styles will be applied in the mobile section */
+        width: auto;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+    }
 }

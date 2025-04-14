@@ -152,8 +152,68 @@ backgroundOptions.forEach(option => {
     });
 });
 
+// Mobile sidebar overlay handling
+let sidebarOverlay;
+function createMobileElements() {
+    // Create sidebar overlay if it doesn't exist
+    if (!document.querySelector('.sidebar-overlay')) {
+        sidebarOverlay = document.createElement('div');
+        sidebarOverlay.className = 'sidebar-overlay';
+        document.body.appendChild(sidebarOverlay);
+        
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                document.body.classList.remove('sidebar-visible');
+            }
+        });
+    }
+}
+
+// Check if mobile view on resize
+window.addEventListener('resize', handleResize);
+
+// Add touch event listeners for more reliable mobile interaction
+function setupMobileTouchListeners() {
+    // No longer needed, handled by standard click/touch propagation
+    // const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+    // sidebarToggleBtn.removeEventListener('touchstart', mobileToggleSidebar);
+    // sidebarToggleBtn.addEventListener('touchstart', mobileToggleSidebar);
+    // function mobileToggleSidebar(e) { ... }
+}
+
+function handleResize() {
+    createMobileElements();
+    // setupMobileTouchListeners(); // No longer needed
+    
+    // Reset sidebar state when switching between mobile and desktop
+    if (window.innerWidth <= 768) {
+        // Mobile view - ensure sidebar is hidden by default
+        document.body.classList.remove('sidebar-visible');
+        appContainer.classList.add('sidebar-hidden');
+    } else {
+        // Desktop view - restore to localStorage state
+        const storedState = localStorage.getItem('sidebarState');
+        if (storedState === 'visible') {
+            appContainer.classList.remove('sidebar-hidden');
+        } else {
+            appContainer.classList.add('sidebar-hidden');
+        }
+        document.body.classList.remove('sidebar-visible');
+    }
+}
+
 // Check auth status and initialize app
 async function initializeApp() {
+    // Create mobile elements
+    createMobileElements();
+    
+    // Handle mobile/desktop view on startup
+    handleResize();
+    
+    // Setup mobile touch listeners - No longer needed
+    // setupMobileTouchListeners();
+    
     // Check for saved theme and font preferences
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -239,7 +299,7 @@ async function initializeApp() {
         if (lastNote) {
             //console.log("Found last note, selecting:", lastNote.id);
             selectNote(lastNote.id);
-        } else if (notes.length > 0) { // Should always be true here now unless create failed
+        } else if (notes.length > 0) { // Should always be true here unless create failed
             //console.log("Last note not found or invalid, selecting first note:", notes[0].id);
             selectNote(notes[0].id); // Select the first (most recent) note
         } else {
@@ -895,9 +955,17 @@ async function logout() {
 
 // Toggle sidebar function
 function toggleSidebar() {
-    isSidebarHidden = !isSidebarHidden;
-    appContainer.classList.toggle('sidebar-hidden');
-    localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+    // Different behavior for mobile and desktop
+    if (window.innerWidth <= 768) {
+        // Mobile behavior - use body class to slide in the sidebar
+        document.body.classList.toggle('sidebar-visible');
+        
+    } else {
+        // Desktop behavior - keep existing functionality
+        isSidebarHidden = !isSidebarHidden;
+        appContainer.classList.toggle('sidebar-hidden');
+        localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+    }
 }
 
 // Function to merge local notes with server
@@ -993,8 +1061,39 @@ function toggleThemePalette() {
     isPaletteOpen = !isPaletteOpen;
     if (isPaletteOpen) {
         themePalette.classList.add('active');
+        
+        // For mobile, also add a touch-friendly way to close by tapping outside
+        if (window.innerWidth <= 768) {
+            // Create and add a backdrop if it doesn't exist
+            if (!document.querySelector('.palette-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'palette-backdrop';
+                backdrop.style.position = 'fixed';
+                backdrop.style.top = '0';
+                backdrop.style.left = '0';
+                backdrop.style.right = '0';
+                backdrop.style.bottom = '0';
+                backdrop.style.zIndex = '109'; // Below palette but above other elements
+                backdrop.style.backgroundColor = 'transparent'; // Just for capturing taps
+                
+                // Close palette when tapping outside
+                backdrop.addEventListener('click', function(e) {
+                    if (isPaletteOpen) {
+                        toggleThemePalette();
+                    }
+                    this.remove();
+                });
+                
+                document.body.appendChild(backdrop);
+            }
+        }
     } else {
         themePalette.classList.remove('active');
+        // Remove backdrop when closing
+        const backdrop = document.querySelector('.palette-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
     }
 }
 
