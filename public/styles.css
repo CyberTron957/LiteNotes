@@ -9,6 +9,7 @@
     --danger: #ffffff;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     --radius: 8px;
+    --pattern-color: rgba(255, 255, 255, 0.5); /* Better contrast in dark theme */
 }
 
 /* Light theme */
@@ -21,6 +22,7 @@ body.light-theme {
     --hover: #f0f0f0;
     --danger: #0f0f0f;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --pattern-color: rgba(20, 20, 20, 0.3); /* Better contrast in light theme */
 }
 
 /* Sepia theme */
@@ -33,6 +35,7 @@ body.sepia-theme {
     --hover: #e9dcc8;
     --danger: #382c1d;
     --shadow: 0 4px 12px rgba(56, 44, 29, 0.1);
+    --pattern-color: rgba(56, 44, 29, 0.3); /* Better contrast in sepia theme */
 }
 
 /* Slate theme */
@@ -45,6 +48,7 @@ body.slate-theme {
     --hover: #32373e;
     --danger: #d8dde2;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --pattern-color: rgba(216, 221, 226, 0.4); /* Better contrast in slate theme */
 }
 
 /* Minimal Blue theme */
@@ -57,6 +61,7 @@ body.blue-theme {
     --hover: #d4e0f0;
     --danger: #0a2540;
     --shadow: 0 4px 12px rgba(10, 37, 64, 0.1);
+    --pattern-color: rgba(10, 37, 64, 0.25); /* Better contrast in blue theme */
 }
 
 /* Additional minimalist color themes */
@@ -69,6 +74,7 @@ body.mono-theme {
     --hover: #222222;
     --danger: #ffffff;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --pattern-color: rgba(255, 255, 255, 0.5); /* Same as dark theme */
 }
 
 body.mint-theme {
@@ -80,6 +86,7 @@ body.mint-theme {
     --hover: #d8ede5;
     --danger: #204237;
     --shadow: 0 4px 12px rgba(32, 66, 55, 0.1);
+    --pattern-color: rgba(32, 66, 55, 0.3); /* Better contrast in mint theme */
 }
 
 body.lavender-theme {
@@ -91,6 +98,7 @@ body.lavender-theme {
     --hover: #e4dcf5;
     --danger: #3c2d62;
     --shadow: 0 4px 12px rgba(60, 45, 98, 0.1);
+    --pattern-color: rgba(60, 45, 98, 0.3); /* Better contrast in lavender theme */
 }
 
 body.warm-theme {
@@ -102,6 +110,7 @@ body.warm-theme {
     --hover: #e9ded2;
     --danger: #4a3b30;
     --shadow: 0 4px 12px rgba(74, 59, 48, 0.1);
+    --pattern-color: rgba(74, 59, 48, 0.3); /* Better contrast in warm theme */
 }
 
 /* Font styles */
@@ -902,8 +911,33 @@ body {
 }
 
 /* Theme palette layout updates */
+.palette-columns {
+    display: flex;
+    width: 100%;
+    gap: 15px;
+}
+
+.palette-column {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Adjust width of theme palette to accommodate the columns */
 .theme-palette {
-    width: 200px;
+    width: 450px;
+    max-width: 90vw;
+}
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+    .palette-columns {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .theme-palette {
+        width: 250px;
+    }
 }
 
 .palette-section {
@@ -944,4 +978,155 @@ body {
 
 .font-option.active {
     background-color: var(--hover);
+}
+
+/* Background patterns */
+.bg-none {
+    background-image: none;
+}
+
+.bg-dots {
+    background-image: radial-gradient(var(--pattern-color) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+    background-position: 0 0;
+    background-color: var(--bg-primary);
+    opacity: 0.25;
+}
+
+.bg-grid {
+    background-image: linear-gradient(var(--pattern-color) 1.5px, transparent 1.5px),
+                      linear-gradient(90deg, var(--pattern-color) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+    background-position: 0 0;
+    background-color: var(--bg-primary);
+    opacity: 0.2;
+}
+
+.bg-Diamonds {
+    background: var(--bg-primary);
+    background-image: 
+        linear-gradient(135deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(225deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(315deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(45deg, var(--pattern-color) 25%, transparent 25%);
+    background-size: 10px 10px;
+    opacity: 0.2;
+}
+
+/* Remove gradient background */
+/* .bg-gradient {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    opacity: 0.7;
+} */
+
+.bg-scatter {
+    background-color: var(--bg-primary);
+    background-image: radial-gradient(var(--pattern-color) 1.5px, transparent 1.5px),
+                     radial-gradient(var(--pattern-color) 1.5px, var(--bg-primary) 1.5px);
+    background-size: 50px 50px;
+    background-position: 0 0, 25px 25px;
+    opacity: 0.2;
+}
+
+.bg-paper {
+    background-color: var(--bg-primary);
+    background-image: linear-gradient(var(--pattern-color) 1px, transparent 1px),
+                     linear-gradient(90deg, var(--pattern-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 0;
+    opacity: 0.15;
+}
+
+/* Add background container for note editor */
+.note-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Ensure note editor sits above background */
+.note-editor {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+/* Background selector in theme palette */
+.background-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: all 0.2s;
+}
+
+.background-option:hover {
+    background-color: var(--hover);
+}
+
+.background-option.active {
+    background-color: var(--hover);
+}
+
+.background-preview {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 10px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.background-preview.none {
+    background: var(--bg-primary);
+}
+
+.background-preview.dots {
+    background-image: radial-gradient(var(--pattern-color) 1px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: 0.9;
+}
+
+.background-preview.grid {
+    background-image: linear-gradient(var(--pattern-color) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--pattern-color) 1px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: 0.9;
+}
+
+.background-preview.Diamonds {
+    background-image: 
+        linear-gradient(135deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(225deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(315deg, var(--pattern-color) 25%, transparent 25%),
+        linear-gradient(45deg, var(--pattern-color) 25%, transparent 25%);
+    background-size: 10px 10px;
+    opacity: 0.9;
+}
+
+.background-preview.scatter {
+    background-image: radial-gradient(var(--pattern-color) 1px, transparent 1px),
+                     radial-gradient(var(--pattern-color) 1px, var(--bg-primary) 1px);
+    background-size: 6px 6px;
+    background-position: 0 0, 3px 3px;
+    opacity: 0.9;
+}
+
+.background-preview.paper {
+    background-image: linear-gradient(var(--pattern-color) 0.5px, transparent 0.5px),
+                     linear-gradient(90deg, var(--pattern-color) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    opacity: 0.9;
+}
+
+.background-name {
+    font-size: 0.9rem;
+    color: var(--text-primary);
 }

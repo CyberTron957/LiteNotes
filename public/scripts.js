@@ -28,6 +28,7 @@ const themeToggle = document.getElementById('theme-toggle');
 const themePalette = document.getElementById('theme-palette');
 const themeOptions = document.querySelectorAll('.theme-option');
 const fontOptions = document.querySelectorAll('.font-option');
+const backgroundOptions = document.querySelectorAll('.background-option');
 
 // Global variables
 let currentUser = null;
@@ -41,6 +42,7 @@ let isDarkMode = true; // Default to dark mode
 let currentTheme = 'dark'; // Default theme
 let isPaletteOpen = false;
 let currentFont = 'inter'; // Default font
+let currentBackground = 'none'; // Default background
 
 // Event Listeners
 showRegister.addEventListener('click', () => {
@@ -141,6 +143,15 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// Background option click events
+backgroundOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        const background = this.getAttribute('data-background');
+        setBackground(background);
+        // Don't close the palette when changing background
+    });
+});
+
 // Check auth status and initialize app
 async function initializeApp() {
     // Check for saved theme and font preferences
@@ -158,7 +169,14 @@ async function initializeApp() {
         setFont('inter'); // Default font
     }
     
-    // Initialize theme and font options
+    const savedBackground = localStorage.getItem('background');
+    if (savedBackground) {
+        setBackground(savedBackground);
+    } else {
+        setBackground('none'); // Default background
+    }
+    
+    // Initialize theme, font, and background options
     initThemeAndFontOptions();
     
     // Restore sidebar state first
@@ -496,6 +514,7 @@ function renderNoteView(note) {
     const combinedContent = `${note.title || ''}\n${note.content || ''}`;
 
     noteView.innerHTML = `
+        <div class="note-background bg-${currentBackground}"></div>
         <div class="note-content">
             <textarea 
                 class="note-editor" 
@@ -543,6 +562,7 @@ function renderNoteView(note) {
 // Render empty note view
 function renderEmptyNoteView() {
     noteView.innerHTML = `
+        <div class="note-background bg-${currentBackground}"></div>
         <div class="empty-state">
             <i class="fas fa-file-alt"></i>
             <h2>No note selected</h2>
@@ -828,11 +848,20 @@ async function logout() {
         // Clear local data (including local notes)
         localStorage.removeItem('localNotes');
         localStorage.removeItem('sidebarState'); // Clear sidebar state too
+        localStorage.removeItem('lastOpenNoteId'); // Clear last open note ID
+        localStorage.removeItem('noteScrollPositions'); // Clear scroll positions
+        localStorage.removeItem('theme'); // Reset theme
+        localStorage.removeItem('font'); // Reset font
+        localStorage.removeItem('background'); // Reset background
         
         // Reset UI to logged-out state
         userInfoSection.style.display = 'none';
         signinPrompt.style.display = 'block';
+        setTheme('dark'); // Reset to default theme
+        setFont('inter'); // Reset to default font
+        setBackground('none'); // Reset to default background
         loadLocalNotes(); // Load any potentially remaining local notes (though usually cleared)
+        renderEmptyNoteView(); // Show empty state
         
         showToast('Logged out successfully', 'success');
     } catch (error) {
@@ -844,11 +873,20 @@ async function logout() {
         localStorage.removeItem('username');
         localStorage.removeItem('localNotes');
         localStorage.removeItem('sidebarState'); // Clear sidebar state too
+        localStorage.removeItem('lastOpenNoteId');
+        localStorage.removeItem('noteScrollPositions');
+        localStorage.removeItem('theme');
+        localStorage.removeItem('font');
+        localStorage.removeItem('background');
         
         // Reset UI to logged-out state
         userInfoSection.style.display = 'none';
         signinPrompt.style.display = 'block';
+        setTheme('dark');
+        setFont('inter');
+        setBackground('none');
         loadLocalNotes();
+        renderEmptyNoteView();
     }
 }
 
@@ -1014,6 +1052,36 @@ function setFont(font) {
     }
 }
 
+// Set background function
+function setBackground(background) {
+    // Update active state in background options
+    backgroundOptions.forEach(option => {
+        if (option.getAttribute('data-background') === background) {
+            option.classList.add('active');
+        } else {
+            option.classList.remove('active');
+        }
+    });
+    
+    // Save background preference
+    localStorage.setItem('background', background);
+    currentBackground = background;
+    
+    // Update background on current note view if one is open
+    if (currentNoteId) {
+        const noteBackground = document.querySelector('.note-background');
+        if (noteBackground) {
+            noteBackground.className = `note-background bg-${background}`;
+        } else {
+            // If the background element doesn't exist yet, re-render the note view
+            const selectedNote = notes.find(note => note.id === currentNoteId);
+            if (selectedNote) {
+                renderNoteView(selectedNote);
+            }
+        }
+    }
+}
+
 // Initialize theme and font options
 function initThemeAndFontOptions() {
     // Set initial active states
@@ -1025,6 +1093,12 @@ function initThemeAndFontOptions() {
 
     fontOptions.forEach(option => {
         if (option.getAttribute('data-font') === currentFont) {
+            option.classList.add('active');
+        }
+    });
+    
+    backgroundOptions.forEach(option => {
+        if (option.getAttribute('data-background') === currentBackground) {
             option.classList.add('active');
         }
     });
