@@ -6,23 +6,25 @@
     <title>FastNotes - Minimalist Notes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/index.css">
     <style>
         :root {
             /* Dark theme (default) */
-            --bg-primary: #0f0f0f;
+            --bg-primary: #000000;
             --bg-secondary: #1a1a1a;
             --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent: #ffffff;
-            --border: #2a2a2a;
-            --hover: #2a2a2a;
+            --text-secondary: #bbbbbb;
+            --border: #333333;
+            --hover: #222222;
             --danger: #ffffff;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             --radius: 8px;
         }
 
         /* Light theme */
-        .light-mode {
+        body.light-theme {
             --bg-primary: #ffffff;
             --bg-secondary: #f5f5f5;
             --text-primary: #0f0f0f;
@@ -33,11 +35,121 @@
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        /* Sepia theme */
+        body.sepia-theme {
+            --bg-primary: #f8f3e9;
+            --bg-secondary: #ece0cc;
+            --text-primary: #382c1d;
+            --text-secondary: #6b5f50;
+            --border: #d3c4a9;
+            --hover: #e9dcc8;
+            --danger: #382c1d;
+            --shadow: 0 4px 12px rgba(56, 44, 29, 0.1);
+        }
+
+        /* Slate theme */
+        body.slate-theme {
+            --bg-primary: #1e2125;
+            --bg-secondary: #272b31;
+            --text-primary: #d8dde2;
+            --text-secondary: #9fa6ad;
+            --border: #3a3f47;
+            --hover: #32373e;
+            --danger: #d8dde2;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Minimal Blue theme */
+        body.blue-theme {
+            --bg-primary: #f0f5fa;
+            --bg-secondary: #e0e9f4;
+            --text-primary: #0a2540;
+            --text-secondary: #627994;
+            --border: #c9d8eb;
+            --hover: #d4e0f0;
+            --danger: #0a2540;
+            --shadow: 0 4px 12px rgba(10, 37, 64, 0.1);
+        }
+
+        /* Additional minimalist color themes */
+        body.mono-theme {
+            --bg-primary: #000000;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #bbbbbb;
+            --border: #333333;
+            --hover: #222222;
+            --danger: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body.mint-theme {
+            --bg-primary: #f2f7f5;
+            --bg-secondary: #e6f2ef;
+            --text-primary: #204237;
+            --text-secondary: #5c8376;
+            --border: #cbe3d9;
+            --hover: #d8ede5;
+            --danger: #204237;
+            --shadow: 0 4px 12px rgba(32, 66, 55, 0.1);
+        }
+
+        body.lavender-theme {
+            --bg-primary: #f9f7ff;
+            --bg-secondary: #efeaf6;
+            --text-primary: #3c2d62;
+            --text-secondary: #8672b3;
+            --border: #d2caec;
+            --hover: #e4dcf5;
+            --danger: #3c2d62;
+            --shadow: 0 4px 12px rgba(60, 45, 98, 0.1);
+        }
+
+        body.warm-theme {
+            --bg-primary: #f9f5f1;
+            --bg-secondary: #f0e9e2;
+            --text-primary: #4a3b30;
+            --text-secondary: #8c7b6d;
+            --border: #e2d5c8;
+            --hover: #e9ded2;
+            --danger: #4a3b30;
+            --shadow: 0 4px 12px rgba(74, 59, 48, 0.1);
+        }
+
+        /* Font styles */
+        body.font-inter {
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-bold: 600;
+        }
+
+        body.font-mono {
+            --font-family: 'SF Mono', 'Roboto Mono', monospace;
+            --font-weight-normal: 400;
+            --font-weight-bold: 600;
+            --font-size-adjust: 0.95;
+        }
+
+        body.font-serif {
+            --font-family: 'Merriweather', Georgia, serif;
+            --font-weight-normal: 300;
+            --font-weight-bold: 600;
+            --font-size-adjust: 0.95;
+        }
+
+        body.font-space {
+            --font-family: 'Space Mono', 'Courier New', monospace;
+            --font-weight-normal: 400;
+            --font-weight-bold: 700;
+            --font-size-adjust: 0.9;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: var(--font-family, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+            font-weight: var(--font-weight-normal, 400);
             transition: all 0.2s ease;
         }
 
@@ -159,16 +271,16 @@
             cursor: pointer;
             border-radius: var(--radius);
             margin: 0.5rem 0 1rem;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             background-color: var(--text-primary);
-            box-shadow: none;
             font-weight: 500;
             border: none;
+            box-shadow: var(--shadow);
         }
 
         .create-note:hover {
             transform: translateY(-2px);
-            background-color: #f0f0f0;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
 
         .create-note i {
@@ -190,7 +302,6 @@
 
         .note-item:hover, .note-item.active {
             background-color: var(--hover);
-            border-left: 2px solid var(--text-primary);
         }
     
         .note-content {
@@ -337,17 +448,20 @@
         .btn-primary {
             background-color: var(--text-primary);
             color: var(--bg-primary);
-            box-shadow: none;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
-            background-color: #f0f0f0;
+            background-color: var(--text-primary);
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
         
         .btn-primary:active {
             transform: translateY(1px);
-            background-color: #e0e0e0;
+            background-color: var(--text-primary);
+            box-shadow: var(--shadow);
         }
 
         .auth-footer {
@@ -502,6 +616,7 @@
             font-size: 16px;
             color: var(--text-primary);
             transition: transform 0.3s;
+            pointer-events: none; /* Prevent icon from capturing clicks */
         }
 
         .theme-toggle:hover {
@@ -672,9 +787,179 @@
                 font-size: 2rem;
             }
         }
+
+        /* Theme Toggle and Selector */
+        .theme-toggle {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            background: var(--bg-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+            border: 1px solid var(--border);
+            margin-right: 10px;
+        }
+
+        .theme-toggle i {
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: transform 0.3s;
+            pointer-events: none; /* Prevent icon from capturing clicks */
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        .container.sidebar-hidden .theme-toggle {
+            left: 64px;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .theme-palette {
+            position: absolute;
+            left: 70px;
+            bottom: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 12px;
+            z-index: 100;
+            display: none;
+            box-shadow: var(--shadow);
+            width: 160px;
+        }
+
+        .theme-palette.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+        }
+
+        .theme-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .theme-option:hover {
+            background-color: var(--hover);
+        }
+
+        .theme-option.active {
+            background-color: var(--hover);
+        }
+
+        .theme-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .theme-color.dark {
+            background-color: #000000;
+            border: 1px solid #333333;
+        }
+
+        .theme-color.light {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+
+        .theme-color.sepia {
+            background-color: #f8f3e9;
+            border: 1px solid #d3c4a9;
+        }
+
+        .theme-color.slate {
+            background-color: #1e2125;
+            border: 1px solid #3a3f47;
+        }
+
+        .theme-color.blue {
+            background-color: #f0f5fa;
+            border: 1px solid #c9d8eb;
+        }
+
+        .theme-name {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        /* Font-specific adjustments */
+        .font-mono .note-editor, .font-space .note-editor {
+            font-size: calc(1.1rem * var(--font-size-adjust, 1));
+            line-height: 1.7;
+        }
+
+        .font-serif .note-editor {
+            font-size: calc(1.1rem * var(--font-size-adjust, 1));
+            line-height: 1.8;
+        }
+
+        /* Theme palette layout updates */
+        .theme-palette {
+            width: 200px;
+        }
+
+        .palette-section {
+            margin-bottom: 12px;
+        }
+
+        .palette-section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .theme-color.mono { background-color: #000000; border: 1px solid #333333; }
+        .theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
+        .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
+        .theme-color.warm { background-color: #f9f5f1; border: 1px solid #e2d5c8; }
+
+        .font-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+        }
+
+        .font-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .font-option:hover {
+            background-color: var(--hover);
+        }
+
+        .font-option.active {
+            background-color: var(--hover);
+        }
     </style>
 </head>
-<body>
+<body class="font-inter">
     <!-- Auth Modal -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-content">
@@ -753,7 +1038,65 @@
             </div>
             <!-- Theme Toggle Button -->
             <div class="theme-toggle" id="theme-toggle">
-                <i class="fas fa-sun"></i>
+                <i class="fas fa-palette"></i>
+            </div>
+            <!-- Theme Palette -->
+            <div class="theme-palette" id="theme-palette">
+                <div class="palette-section">
+                    <div class="palette-section-title">Color Theme</div>
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-color dark"></div>
+                        <div class="theme-name">Dark</div>
+                    </div>
+                    <div class="theme-option" data-theme="light">
+                        <div class="theme-color light"></div>
+                        <div class="theme-name">Light</div>
+                    </div>
+                    <div class="theme-option" data-theme="mono">
+                        <div class="theme-color mono"></div>
+                        <div class="theme-name">Monochrome</div>
+                    </div>
+                    <div class="theme-option" data-theme="sepia">
+                        <div class="theme-color sepia"></div>
+                        <div class="theme-name">Sepia</div>
+                    </div>
+                    <div class="theme-option" data-theme="slate">
+                        <div class="theme-color slate"></div>
+                        <div class="theme-name">Slate</div>
+                    </div>
+                    <div class="theme-option" data-theme="blue">
+                        <div class="theme-color blue"></div>
+                        <div class="theme-name">Blue</div>
+                    </div>
+                    <div class="theme-option" data-theme="mint">
+                        <div class="theme-color mint"></div>
+                        <div class="theme-name">Mint</div>
+                    </div>
+                    <div class="theme-option" data-theme="lavender">
+                        <div class="theme-color lavender"></div>
+                        <div class="theme-name">Lavender</div>
+                    </div>
+                    <div class="theme-option" data-theme="warm">
+                        <div class="theme-color warm"></div>
+                        <div class="theme-name">Warm</div>
+                    </div>
+                </div>
+                
+                <div class="palette-section">
+                    <div class="palette-section-title">Typography</div>
+                    <div class="font-option" data-font="inter">
+                        <div class="theme-name">Inter Sans</div>
+                    </div>
+                    <div class="font-option" data-font="mono">
+                        <div class="theme-name">SF Mono</div>
+                    </div>
+                    <div class="font-option" data-font="serif">
+                        <div class="theme-name">Merriweather</div>
+                    </div>
+                    <div class="font-option" data-font="space">
+                        <div class="theme-name">Space Mono</div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="sidebar-toggle" id="sidebar-toggle">
@@ -801,6 +1144,9 @@
         const forgotPasswordButton = document.getElementById('forgot-password-button');
         const showLoginFromForgot = document.getElementById('show-login-from-forgot');
         const themeToggle = document.getElementById('theme-toggle');
+        const themePalette = document.getElementById('theme-palette');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const fontOptions = document.querySelectorAll('.font-option');
 
         // Global variables
         let currentUser = null;
@@ -811,6 +1157,9 @@
         let statusDotFadeTimeout = null; // Timeout ID for dot fade
         let isSidebarHidden = true; // Default to hidden
         let isDarkMode = true; // Default to dark mode
+        let currentTheme = 'dark'; // Default theme
+        let isPaletteOpen = false;
+        let currentFont = 'inter'; // Default font
 
         // Event Listeners
         showRegister.addEventListener('click', () => {
@@ -884,17 +1233,52 @@
         });
 
         // Theme toggle functionality
-        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('click', toggleThemePalette);
+
+        // Theme options click events
+        themeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme');
+                setTheme(theme);
+                toggleThemePalette();
+            });
+        });
+
+        // Font option click events
+        fontOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const font = this.getAttribute('data-font');
+                setFont(font);
+                // Don't close the palette when changing font
+            });
+        });
+
+        // Close theme palette when clicking outside
+        document.addEventListener('click', function(event) {
+            if (isPaletteOpen && !themePalette.contains(event.target) && event.target !== themeToggle) {
+                toggleThemePalette();
+            }
+        });
 
         // Check auth status and initialize app
         async function initializeApp() {
-            // Check for saved theme preference
+            // Check for saved theme and font preferences
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                isDarkMode = false;
-                document.body.classList.add('light-mode');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                setTheme('dark'); // Default theme
             }
+            
+            const savedFont = localStorage.getItem('font');
+            if (savedFont) {
+                setFont(savedFont);
+            } else {
+                setFont('inter'); // Default font
+            }
+            
+            // Initialize theme and font options
+            initThemeAndFontOptions();
             
             // Restore sidebar state first
             const storedSidebarState = localStorage.getItem('sidebarState');
@@ -937,28 +1321,28 @@
 
             // If no notes exist after loading, create a default one
             if (notes.length === 0) {
-                console.log("No notes found, creating initial note...");
+                //console.log("No notes found, creating initial note...");
                 await createNewNote(); // Wait for creation and selection
-                console.log("Initial note created.");
+                //console.log("Initial note created.");
             } else {
                 // Only try to select existing note if we didn't just create one
-                console.log("Attempting to select last opened note...");
+                //console.log("Attempting to select last opened note...");
                 const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
-                console.log("lastOpenNoteId from storage:", lastOpenNoteId);
-                console.log("Current notes array (length):", notes.length);
-                console.log("Current notes array (IDs):", notes.map(n => n.id));
+                //console.log("lastOpenNoteId from storage:", lastOpenNoteId);
+                //console.log("Current notes array (length):", notes.length);
+                //console.log("Current notes array (IDs):", notes.map(n => n.id));
 
                 const lastNote = notes.find(note => note.id === lastOpenNoteId);
 
                 if (lastNote) {
-                    console.log("Found last note, selecting:", lastNote.id);
+                    //console.log("Found last note, selecting:", lastNote.id);
                     selectNote(lastNote.id);
                 } else if (notes.length > 0) { // Should always be true here now unless create failed
-                    console.log("Last note not found or invalid, selecting first note:", notes[0].id);
+                    //console.log("Last note not found or invalid, selecting first note:", notes[0].id);
                     selectNote(notes[0].id); // Select the first (most recent) note
                 } else {
                      // This case should ideally not be reached if creation worked
-                    console.log("No notes found, rendering empty view.");
+                    //console.log("No notes found, rendering empty view.");
                     renderEmptyNoteView();
                 }
             }
@@ -1041,15 +1425,15 @@
 
                 // Attempt to merge local notes if they existed
                 if (localNotesExist && serverNotes) { // Ensure serverNotes is not null/undefined
-                     console.log("Starting merge process...");
+                     //console.log("Starting merge process...");
                      await mergeLocalNotesWithServer(JSON.parse(localNotesRaw), serverNotes);
-                     console.log("Merge process finished. Clearing local notes and fetching final list.");
+                     //console.log("Merge process finished. Clearing local notes and fetching final list.");
                      // Clear local notes *after* successful merge attempt
                      localStorage.removeItem('localNotes');
                      // Re-fetch the final merged list from the server to ensure consistency
                      await fetchNotes(); 
                 } else {
-                     console.log("No local notes to merge or server notes fetch failed.");
+                     //console.log("No local notes to merge or server notes fetch failed.");
                      // If no merge happened, the global `notes` variable was already updated 
                      // by the initial fetchNotes call above, so no need to fetch again unless serverNotes failed.
                      if (!serverNotes) {
@@ -1132,7 +1516,7 @@
         // Fetch all notes (from server)
         async function fetchNotes() {
             if (!currentToken) return null; 
-            console.log("Fetching notes from server...");
+            //console.log("Fetching notes from server...");
             try {
                 const response = await fetch('/notes', {
                     headers: {
@@ -1143,7 +1527,7 @@
                 if (!response.ok) {
                     // Handle token expiration/invalidation
                     if (response.status === 401 || response.status === 403) {
-                        console.log("Token invalid/expired during fetchNotes. Logging out.");
+                        //console.log("Token invalid/expired during fetchNotes. Logging out.");
                         logout(); // Attempt logout to clear local state
                         return []; // Return empty array as user is logged out
                     }
@@ -1151,7 +1535,7 @@
                 }
                 
                 let fetchedNotes = await response.json();
-                console.log(`Fetched ${fetchedNotes.length} notes.`);
+                //console.log(`Fetched ${fetchedNotes.length} notes.`);
 
                 // Ensure timestamps exist and sort (using updated_at)
                 fetchedNotes.forEach(note => {
@@ -1164,7 +1548,7 @@
                 notes = fetchedNotes; 
                 renderNotesList();
                 
-                console.log("Notes fetched, sorted, and sidebar rendered.");
+                //console.log("Notes fetched, sorted, and sidebar rendered.");
                 return fetchedNotes; // <-- RETURN the fetched notes
 
             } catch (error) {
@@ -1471,7 +1855,7 @@
                     saveStatusDot.classList.remove('visible');
                 }, 2000); 
                 
-                console.log("Note saved locally");
+                //console.log("Note saved locally");
                  // Save scroll position after successful local save
                 if (contentInput) {
                     saveScrollPosition(currentNoteId, contentInput.scrollTop);
@@ -1596,7 +1980,7 @@
 
         // Function to merge local notes with server
         async function mergeLocalNotesWithServer(localNotes, serverNotes) {
-            console.log("Attempting to merge local notes...");
+            //console.log("Attempting to merge local notes...");
             let uploadPromises = [];
 
             for (const localNote of localNotes) {
@@ -1606,7 +1990,7 @@
                 );
 
                 if (!existsOnServer) {
-                    console.log(`Uploading local note: ${localNote.title}`);
+                    //console.log(`Uploading local note: ${localNote.title}`);
                     // If it doesn't exist, upload it
                     uploadPromises.push(
                         fetch('/notes', {
@@ -1635,7 +2019,7 @@
 
             // Wait for all uploads to attempt
             await Promise.all(uploadPromises);
-            console.log("Local note merge process finished.");
+            //console.log("Local note merge process finished.");
         }
 
         // Request Password Reset function
@@ -1682,19 +2066,87 @@
             }
         }
 
-        // Toggle theme function
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            
-            if (isDarkMode) {
-                document.body.classList.remove('light-mode');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                localStorage.setItem('theme', 'dark');
+        // Toggle theme palette
+        function toggleThemePalette() {
+            isPaletteOpen = !isPaletteOpen;
+            if (isPaletteOpen) {
+                themePalette.classList.add('active');
             } else {
-                document.body.classList.add('light-mode');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                localStorage.setItem('theme', 'light');
+                themePalette.classList.remove('active');
             }
+        }
+
+        // Set theme function
+        function setTheme(theme) {
+            // Remove all existing theme classes
+            document.body.classList.remove('light-theme', 'sepia-theme', 'slate-theme', 'blue-theme', 'mono-theme', 'mint-theme', 'lavender-theme', 'warm-theme');
+            
+            // Add appropriate theme class
+            if (theme !== 'dark') {
+                document.body.classList.add(`${theme}-theme`);
+            }
+            
+            // Update active state in theme palette
+            themeOptions.forEach(option => {
+                if (option.getAttribute('data-theme') === theme) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+            
+            // Save theme preference
+            localStorage.setItem('theme', theme);
+            currentTheme = theme;
+
+            // Clear any inline styles that might interfere with CSS variables
+            createNoteBtn.removeAttribute('style');
+        }
+
+        // Set font function
+        function setFont(font) {
+            // Remove all existing font classes
+            document.body.classList.remove('font-inter', 'font-mono', 'font-serif', 'font-space');
+            
+            // Add appropriate font class
+            document.body.classList.add(`font-${font}`);
+            
+            // Update active state in font options
+            fontOptions.forEach(option => {
+                if (option.getAttribute('data-font') === font) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+            
+            // Save font preference
+            localStorage.setItem('font', font);
+            currentFont = font;
+
+            // If we've already loaded a note, refresh the editor to apply the new font
+            if (currentNoteId) {
+                const selectedNote = notes.find(note => note.id === currentNoteId);
+                if (selectedNote) {
+                    renderNoteView(selectedNote);
+                }
+            }
+        }
+
+        // Initialize theme and font options
+        function initThemeAndFontOptions() {
+            // Set initial active states
+            themeOptions.forEach(option => {
+                if (option.getAttribute('data-theme') === currentTheme) {
+                    option.classList.add('active');
+                }
+            });
+
+            fontOptions.forEach(option => {
+                if (option.getAttribute('data-font') === currentFont) {
+                    option.classList.add('active');
+                }
+            });
         }
 
         // Initialize the app
