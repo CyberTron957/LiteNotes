@@ -169,11 +169,11 @@ body {
 .sidebar {
     width: 250px;
     background-color: var(--bg-primary);
-    border-right: 1px solid var(--border);
+    border-right: none;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    box-shadow: none;
+    box-shadow: 1px 0 10px rgba(0, 0, 0, 0.05);
     transition: margin-left 0.3s ease;
     z-index: 5;
     padding-bottom: 20px;
@@ -194,7 +194,7 @@ body {
     padding: 0;
     position: relative;
     width: 100%;
-    padding-left: 15px;
+    padding-left: 20px;
     transition: padding-left 0.3s ease;
 }
 

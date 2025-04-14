@@ -159,7 +159,10 @@ async function initializeApp() {
     if (savedTheme) {
         setTheme(savedTheme);
     } else {
-        setTheme('dark'); // Default theme
+        // On first visit with no saved theme, use a random theme
+        const themes = ['dark', 'light', 'mono', 'sepia', 'slate', 'blue', 'mint', 'lavender', 'warm'];
+        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+        setTheme(randomTheme);
     }
     
     const savedFont = localStorage.getItem('font');
