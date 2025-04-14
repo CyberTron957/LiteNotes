@@ -34,6 +34,9 @@
             --danger: #0f0f0f;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+        body.light-theme .sidebar {
+            box-shadow: 4px 0px 15px -5px rgba(0, 0, 0, 0.05);
+        }
 
         /* Sepia theme */
         body.sepia-theme {
@@ -45,6 +48,9 @@
             --hover: #e9dcc8;
             --danger: #382c1d;
             --shadow: 0 4px 12px rgba(56, 44, 29, 0.1);
+        }
+        body.sepia-theme .sidebar {
+             box-shadow: 4px 0px 15px -5px rgba(56, 44, 29, 0.07);
         }
 
         /* Slate theme */
@@ -58,6 +64,9 @@
             --danger: #d8dde2;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
+        body.slate-theme .sidebar {
+            box-shadow: 4px 0px 15px -5px rgba(0, 0, 0, 0.15);
+        }
 
         /* Minimal Blue theme */
         body.blue-theme {
@@ -70,6 +79,9 @@
             --danger: #0a2540;
             --shadow: 0 4px 12px rgba(10, 37, 64, 0.1);
         }
+         body.blue-theme .sidebar {
+             box-shadow: 4px 0px 15px -5px rgba(10, 37, 64, 0.08);
+         }
 
         /* Additional minimalist color themes */
         body.mono-theme {
@@ -82,6 +94,9 @@
             --danger: #ffffff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
+        body.mono-theme .sidebar {
+            box-shadow: 4px 0px 15px -5px rgba(0, 0, 0, 0.15);
+        }
 
         body.mint-theme {
             --bg-primary: #f2f7f5;
@@ -93,6 +108,9 @@
             --danger: #204237;
             --shadow: 0 4px 12px rgba(32, 66, 55, 0.1);
         }
+         body.mint-theme .sidebar {
+             box-shadow: 4px 0px 15px -5px rgba(32, 66, 55, 0.07);
+         }
 
         body.lavender-theme {
             --bg-primary: #f9f7ff;
@@ -104,6 +122,9 @@
             --danger: #3c2d62;
             --shadow: 0 4px 12px rgba(60, 45, 98, 0.1);
         }
+         body.lavender-theme .sidebar {
+             box-shadow: 4px 0px 15px -5px rgba(60, 45, 98, 0.07);
+         }
 
         body.warm-theme {
             --bg-primary: #f9f5f1;
@@ -115,6 +136,9 @@
             --danger: #4a3b30;
             --shadow: 0 4px 12px rgba(74, 59, 48, 0.1);
         }
+         body.warm-theme .sidebar {
+             box-shadow: 4px 0px 15px -5px rgba(74, 59, 48, 0.07);
+         }
 
         /* Font styles */
         body.font-inter {
@@ -172,12 +196,13 @@
         .sidebar {
             width: 250px;
             background-color: var(--bg-primary);
-            border-right: 1px solid var(--border);
+            /* border-right: 1px solid var(--border); Remove border */
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            box-shadow: none;
-            transition: margin-left 0.3s ease;
+            /* Add a subtle shadow for separation */
+            box-shadow: 4px 0px 15px -5px rgba(0, 0, 0, 0.1);
+            transition: margin-left 0.3s ease, box-shadow 0.3s ease;
             z-index: 5;
             padding-bottom: 20px;
             /* Hide scrollbar but allow scrolling */
@@ -185,7 +210,7 @@
             -ms-overflow-style: none;  /* IE and Edge */
         }
 
-        .sidebar::-webkit-scrollbar { 
+        .sidebar::-webkit-scrollbar {
             display: none; /* WebKit */
         }
 
@@ -267,21 +292,20 @@
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            color: var(--text-primary);
+            color: var(--bg-primary);
             cursor: pointer;
             border-radius: var(--radius);
             margin: 0.5rem 0 1rem;
             transition: all 0.3s ease;
-            background-color: var(--bg-primary);
+            background-color: var(--text-primary);
             font-weight: 500;
-            border: 2px solid var(--text-primary);
+            border: none;
             box-shadow: var(--shadow);
         }
 
         .create-note:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-            background-color: var(--hover);
         }
 
         .create-note i {
@@ -1453,9 +1477,6 @@
 
             } catch (error) {
                 showToast(error.message, 'error');
-                notes = []; // Clear notes on error
-                renderNotesList(); // Render empty list
-                return []; // Return empty array on error
             }
         }
 
@@ -1870,8 +1891,7 @@
         // Show toast notification
         function showToast(message, type = 'success') {
             toast.textContent = message;
-            toast.className = `toast ${type}`;
-            toast.classList.add('visible');
+            toast.className = `toast ${type} visible`; // Add visible class directly
             
             setTimeout(() => {
                 toast.classList.remove('visible');
@@ -1951,11 +1971,18 @@
                 // Clear local data (including local notes)
                 localStorage.removeItem('localNotes');
                 localStorage.removeItem('sidebarState'); // Clear sidebar state too
+                localStorage.removeItem('lastOpenNoteId'); // Clear last open note ID
+                localStorage.removeItem('noteScrollPositions'); // Clear scroll positions
+                localStorage.removeItem('theme'); // Reset theme
+                localStorage.removeItem('font'); // Reset font
                 
                 // Reset UI to logged-out state
                 userInfoSection.style.display = 'none';
                 signinPrompt.style.display = 'block';
+                setTheme('dark'); // Reset to default theme
+                setFont('inter'); // Reset to default font
                 loadLocalNotes(); // Load any potentially remaining local notes (though usually cleared)
+                renderEmptyNoteView(); // Show empty state
                 
                 showToast('Logged out successfully', 'success');
             } catch (error) {
@@ -1967,11 +1994,18 @@
                 localStorage.removeItem('username');
                 localStorage.removeItem('localNotes');
                 localStorage.removeItem('sidebarState'); // Clear sidebar state too
+                localStorage.removeItem('lastOpenNoteId');
+                localStorage.removeItem('noteScrollPositions');
+                localStorage.removeItem('theme');
+                localStorage.removeItem('font');
                 
                 // Reset UI to logged-out state
                 userInfoSection.style.display = 'none';
                 signinPrompt.style.display = 'block';
+                setTheme('dark');
+                setFont('inter');
                 loadLocalNotes();
+                renderEmptyNoteView();
             }
         }
         
@@ -2067,6 +2101,13 @@
                 // Re-enable button and restore text on error
                 forgotButton.disabled = false;
                 forgotButton.textContent = 'Send Reset Link';
+            } finally {
+                // Always re-enable button unless successful (error or user exists/doesn't exist)
+                const isSuccess = document.querySelector('.toast.success') !== null;
+                if (!isSuccess) { // Re-enable only if it wasn't a success message
+                    forgotButton.disabled = false;
+                    forgotButton.textContent = 'Send Reset Link';
+                }
             }
         }
 
