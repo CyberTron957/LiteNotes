@@ -267,20 +267,21 @@
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            color: var(--bg-primary);
+            color: var(--text-primary);
             cursor: pointer;
             border-radius: var(--radius);
             margin: 0.5rem 0 1rem;
             transition: all 0.3s ease;
-            background-color: var(--text-primary);
+            background-color: var(--bg-primary);
             font-weight: 500;
-            border: none;
+            border: 2px solid var(--text-primary);
             box-shadow: var(--shadow);
         }
 
         .create-note:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            background-color: var(--hover);
         }
 
         .create-note i {
@@ -1452,6 +1453,9 @@
 
             } catch (error) {
                 showToast(error.message, 'error');
+                notes = []; // Clear notes on error
+                renderNotesList(); // Render empty list
+                return []; // Return empty array on error
             }
         }
 
