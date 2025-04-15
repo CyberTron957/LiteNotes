@@ -4,6 +4,4 @@
 
 LiteNotes is a fast, secure, and minimalist web-based notes application. It has customizable interface, featuring end-to-end encryption, robust authentication, and real-time saving.
 
-<!-- Placeholder for a general app screenshot -->
-![LiteNotes Demo Video](public/images/mockup.webm)
-*LiteNotes Demo Video*
+[mockup.webm](https://github.com/user-attachments/assets/4eff2723-68d4-42bf-b736-1ce676d57972)
