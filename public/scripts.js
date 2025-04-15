@@ -647,9 +647,16 @@ function renderNoteView(note) {
     const deleteNoteBtn = document.getElementById('delete-note-btn');
     const saveStatusDot = document.getElementById('save-status-dot');
 
-    // Add event listeners
+    // Add standard event listeners
     contentInput.addEventListener('input', () => scheduleNoteSave(saveStatusDot));
-    
+    deleteNoteBtn.addEventListener('click', () => {
+        showDeleteConfirmation(note.id, deleteNoteBtn);
+    });
+
+    // ---- Add Keydown Listener for Bullet Points ----
+    contentInput.addEventListener('keydown', handleNoteEditorKeyDown);
+    // ----------------------------------------------
+
     // Restore scroll position
     const savedScrollPosition = getScrollPosition(note.id);
     if (contentInput && savedScrollPosition > 0) {
@@ -658,11 +665,6 @@ function renderNoteView(note) {
             contentInput.scrollTop = savedScrollPosition;
         }, 0);
     }
-
-    // Add delete note functionality
-    deleteNoteBtn.addEventListener('click', () => {
-        showDeleteConfirmation(note.id, deleteNoteBtn);
-    });
 }
 
 // Show delete confirmation popup
@@ -1389,6 +1391,63 @@ function initializeSocket() {
     } else {
         console.log('No token found, skipping Socket.IO connection.');
     }
+}
+
+// Handle Keydown events in the note editor (for bullet points)
+function handleNoteEditorKeyDown(event) {
+    if (event.key === 'Enter') {
+        const textarea = event.target;
+        const currentPos = textarea.selectionStart;
+        const text = textarea.value;
+
+        // Find the start of the current line
+        let lineStart = currentPos - 1;
+        while (lineStart >= 0 && text[lineStart] !== '\n') {
+            lineStart--;
+        }
+        lineStart++; // Move past the '\n' or to the beginning of the text
+
+        const currentLine = text.substring(lineStart, currentPos);
+
+        // Regex to match a bullet point line (*, -, +) with optional indentation
+        // It captures: 1=indentation, 2=bullet char, 3=rest of the line
+        const bulletRegex = /^(\s*)([\*\-\+])(\s+)(.*)/;
+        const match = currentLine.match(bulletRegex);
+
+        if (match) {
+            const indentation = match[1];
+            const bulletChar = match[2];
+            const spacing = match[3]; // Space(s) after bullet
+            const lineContent = match[4];
+
+            if (lineContent.trim().length > 0) {
+                // If the line has content, create a new bullet point below it
+                event.preventDefault(); // Stop default Enter behavior
+
+                const newBullet = `\n${indentation}${bulletChar}${spacing}`;
+
+                // Insert the new bullet point
+                textarea.value = text.substring(0, currentPos) + newBullet + text.substring(currentPos);
+
+                // Move cursor to the end of the new bullet point
+                textarea.selectionStart = textarea.selectionEnd = currentPos + newBullet.length;
+
+            } else {
+                // If the line is empty except for the bullet point, remove the bullet point
+                event.preventDefault(); // Stop default Enter behavior
+
+                // Remove the current empty bullet line
+                textarea.value = text.substring(0, lineStart) + text.substring(currentPos);
+
+                // Move cursor to the start of the (now empty) line
+                textarea.selectionStart = textarea.selectionEnd = lineStart;
+            }
+            // Trigger input event manually for auto-save
+             textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        // If it wasn't a bullet point line, Enter behaves normally
+    }
+    // Add Tab/Shift+Tab handling here in the future if needed
 }
 
 // Initialize the app
