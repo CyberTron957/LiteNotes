@@ -683,8 +683,8 @@ body {
     opacity: 0;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 85px;
+    right: 25px;
     z-index: 1001;
 }
 
@@ -761,137 +761,135 @@ body {
 
 /* Mobile Optimization */
 @media (max-width: 768px) {
-    /* Override the previous media query for better mobile experience */
     .container {
-        flex-direction: row; /* Keep the row layout */
+        /* Keep row layout for main content vs sidebar relationship */
+        flex-direction: row;
+        /* Prevent horizontal scrolling on the container itself */
+        overflow-x: hidden;
     }
 
-    /* Full sidebar on mobile that slides in from left */
+    /* Sidebar base styles for mobile */
     .sidebar {
         position: fixed;
         top: 0;
         left: 0;
-        width: 80%;
+        width: 80%; /* Adjust width as needed */
         max-width: 300px;
-        /* Use -webkit-fill-available for better mobile height */
-        height: -webkit-fill-available;
-        height: 100vh; /* Fallback for browsers that don't support -webkit-fill-available */
-        z-index: 100;
+        height: 100%; /* Use 100% height, adjust overflow */
+        height: -webkit-fill-available; /* iOS height fix */
+        z-index: 1000; /* High z-index */
+        background-color: var(--bg-primary); /* Ensure background */
         transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Smooth transition */
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        overflow-y: auto; /* Allow scrolling within sidebar */
         border-bottom: none;
-        overflow-y: auto;
+        border-right: 1px solid var(--border); /* Add border for definition */
     }
 
-    /* When sidebar is visible on mobile */
+    /* Sidebar open state (controlled by body class) */
     body.sidebar-visible .sidebar {
         transform: translateX(0);
     }
 
-    /* Overlay when sidebar is open */
+    /* Main content adjustments when sidebar is potentially open */
+    .main-content {
+        padding-left: 0; /* Full width by default on mobile */
+        width: 100%;
+        transition: none; /* No transition needed for main content padding on mobile */
+    }
+
+    /* Sidebar toggle button positioning */
+    .sidebar-toggle {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        width: 50px;
+        height: 50px;
+        background-color: var(--text-primary);
+        color: var(--bg-primary);
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        z-index: 1010; /* Above sidebar and overlay */
+        border: none;
+        display: flex; /* Use flex for centering */
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        /* Ensure it's always visible regardless of container classes */
+        left: auto;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Explicitly set icon color for mobile */
+    .sidebar-toggle i {
+        color: var(--bg-primary); /* Ensure icon color contrasts with button background */
+        font-size: 18px; /* Optional: Adjust size if needed */
+    }
+
+    /* Overlay styles */
     .sidebar-overlay {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 99;
+        z-index: 990; /* Below sidebar, above content */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
+    /* Overlay visible state */
     body.sidebar-visible .sidebar-overlay {
-        display: block;
-    }
-
-    /* Optimize note editor for mobile */
-    .note-editor {
-        padding: 20px;
-        font-size: 16px; /* More readable on mobile */
-        padding-bottom: 30vh;
-    }
-
-    /* Position sidebar toggle for mobile */
-    .sidebar-toggle {
-        position: fixed;
-        left: auto;
-        right: 20px;
-        bottom: 20px;
-        background-color: var(--text-primary);
-        color: var(--bg-primary);
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        z-index: 101; /* Ensure button is above sidebar (100) and overlay (99) */
-        border: none;
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .container.sidebar-hidden .sidebar-toggle {
-        left: auto;
-        right: 20px;
         opacity: 1;
         visibility: visible;
     }
 
-    .sidebar-toggle i {
-        color: var(--bg-primary);
-        font-size: 18px;
+    /* Remove desktop-specific rules from mobile */
+    .container.sidebar-hidden .main-content,
+    .container.sidebar-hidden .sidebar-toggle {
+        /* These rules are for desktop, reset them for mobile */
+        padding-left: initial;
+        left: initial;
+        opacity: initial;
+        visibility: initial;
     }
 
-    /* Adjust container padding */
-    .container.sidebar-hidden .main-content {
-        padding-left: 0;
-        width: 100%;
+    /* Ensure theme palette stacking */
+    .palette-columns {
+        flex-direction: column;
+        gap: 20px;
     }
 
-    /* Save status and UI elements positioning */
-    .save-status-dot {
-        bottom: 85px; /* Position above the sidebar toggle */
-        right: 25px;
-    }
-
-    /* Make delete note button always visible on mobile */
-    .delete-note {
-        display: flex;
-        top: 15px;
-        right: 15px;
-    }
-
-    /* Give more space for action buttons on mobile */
-    .note-actions {
-        top: 10px;
-        right: 10px;
-    }
-    
-    /* Adjust theme palette position for mobile */
+    /* Reset theme palette position for mobile bottom sheet */
     .theme-palette {
-        /* Position it at the bottom of the screen, fixed position */
+        /* (Styles from previous steps for bottom sheet) */
         position: fixed;
         left: 0;
         bottom: 0;
         width: 100%;
         max-width: 100%;
-        transform: none; /* Reset any potential transforms */
-        border-radius: 15px 15px 0 0; /* Rounded corners on top only */
-        
-        /* Make scrollable on mobile */
-        max-height: 80vh; /* Limit to 80% of viewport height */
+        max-height: 80vh;
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-        
-        /* Remove conflicting styles */
+        -webkit-overflow-scrolling: touch;
         border-radius: 15px 15px 0 0;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         padding: 20px;
-        z-index: 110; /* Above sidebar overlay */
+        z-index: 1100; /* Above toggle */
+        background-color: var(--bg-secondary);
+        transform: translateY(100%); /* Initially hidden */
+        transition: transform 0.3s ease;
+        display: block; /* Ensure it's display block */
+        animation: none; /* Remove fadeIn animation */
     }
-    
-    /* Close button for theme palette on mobile */
+
+    .theme-palette.active {
+         transform: translateY(0); /* Slide up */
+    }
+
     .theme-palette::before {
         content: '';
         display: block;
@@ -902,11 +900,22 @@ body {
         margin: 0 auto 15px;
     }
 
-    /* Ensure palette columns stack on mobile */
-    .palette-columns {
-        flex-direction: column;
-        gap: 20px;
+    /* Optimize note editor for mobile */
+    .note-editor {
+        padding: 50px 50px; /* Reduce left/right padding specifically for mobile */
+        padding-bottom: 30vh; /* Adjust bottom padding for mobile */
+        
+        font-size: 19px; /* Adjust font size for mobile readability */
     }
+}
+
+/* Reset conflicting absolute positioning from desktop styles */
+.theme-palette {
+    /* Remove absolute positioning if present in default styles */
+    /* position: absolute; */ 
+    /* left: 70px; */
+    /* bottom: 20px; */
+    /* ... other default styles ... */
 }
 
 /* Responsive adjustments for smaller screens */

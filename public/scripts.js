@@ -160,60 +160,62 @@ function createMobileElements() {
         sidebarOverlay = document.createElement('div');
         sidebarOverlay.className = 'sidebar-overlay';
         document.body.appendChild(sidebarOverlay);
-        
-        // Close sidebar when clicking overlay
-        sidebarOverlay.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                document.body.classList.remove('sidebar-visible');
-            }
-        });
+
+        // Close sidebar when clicking overlay (only needed once)
+        sidebarOverlay.addEventListener('click', toggleMobileSidebar);
+    }
+}
+
+// Unified mobile sidebar toggle function
+function toggleMobileSidebar() {
+    if (window.innerWidth <= 768) {
+        document.body.classList.toggle('sidebar-visible');
+    }
+}
+
+// Toggle sidebar (handles both desktop and mobile)
+function toggleSidebar() {
+    if (window.innerWidth <= 768) {
+        toggleMobileSidebar(); // Use the unified mobile toggle
+    } else {
+        // Desktop behavior
+        isSidebarHidden = !isSidebarHidden;
+        appContainer.classList.toggle('sidebar-hidden');
+        localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
     }
 }
 
 // Check if mobile view on resize
 window.addEventListener('resize', handleResize);
 
-// Add touch event listeners for more reliable mobile interaction
-function setupMobileTouchListeners() {
-    // No longer needed, handled by standard click/touch propagation
-    // const sidebarToggleBtn = document.getElementById('sidebar-toggle');
-    // sidebarToggleBtn.removeEventListener('touchstart', mobileToggleSidebar);
-    // sidebarToggleBtn.addEventListener('touchstart', mobileToggleSidebar);
-    // function mobileToggleSidebar(e) { ... }
-}
-
 function handleResize() {
-    createMobileElements();
-    // setupMobileTouchListeners(); // No longer needed
-    
-    // Reset sidebar state when switching between mobile and desktop
     if (window.innerWidth <= 768) {
-        // Mobile view - ensure sidebar is hidden by default
+        // Mobile view
+        createMobileElements();
+        // Ensure sidebar is initially hidden on mobile load/resize
         document.body.classList.remove('sidebar-visible');
-        appContainer.classList.add('sidebar-hidden');
+        // Remove desktop classes if present
+        appContainer.classList.remove('sidebar-hidden');
     } else {
-        // Desktop view - restore to localStorage state
+        // Desktop view
+        document.body.classList.remove('sidebar-visible'); // Ensure mobile class is removed
         const storedState = localStorage.getItem('sidebarState');
         if (storedState === 'visible') {
             appContainer.classList.remove('sidebar-hidden');
         } else {
             appContainer.classList.add('sidebar-hidden');
         }
-        document.body.classList.remove('sidebar-visible');
+        // Remove overlay if it exists
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (overlay) overlay.remove();
     }
 }
 
 // Check auth status and initialize app
 async function initializeApp() {
-    // Create mobile elements
-    createMobileElements();
-    
-    // Handle mobile/desktop view on startup
-    handleResize();
-    
-    // Setup mobile touch listeners - No longer needed
-    // setupMobileTouchListeners();
-    
+    // Handle mobile/desktop view on startup first
+    handleResize(); 
+
     // Check for saved theme and font preferences
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -950,21 +952,6 @@ async function logout() {
         setBackground('none');
         loadLocalNotes();
         renderEmptyNoteView();
-    }
-}
-
-// Toggle sidebar function
-function toggleSidebar() {
-    // Different behavior for mobile and desktop
-    if (window.innerWidth <= 768) {
-        // Mobile behavior - use body class to slide in the sidebar
-        document.body.classList.toggle('sidebar-visible');
-        
-    } else {
-        // Desktop behavior - keep existing functionality
-        isSidebarHidden = !isSidebarHidden;
-        appContainer.classList.toggle('sidebar-hidden');
-        localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
     }
 }
 
