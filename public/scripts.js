@@ -43,6 +43,7 @@ let currentTheme = 'dark'; // Default theme
 let isPaletteOpen = false;
 let currentFont = 'inter'; // Default font
 let currentBackground = 'none'; // Default background
+let socket = null;
 
 // Event Listeners
 showRegister.addEventListener('click', () => {
@@ -278,6 +279,8 @@ async function initializeApp() {
         userInfoSection.style.display = 'flex';
         signinPrompt.style.display = 'none';
         authModal.classList.remove('visible');
+        // Initialize Socket.IO connection
+        initializeSocket();
         // Fetch notes (this function now sorts and updates global `notes`)
         await fetchNotes(); 
     } else {
@@ -413,6 +416,9 @@ async function performLogin(username, password, shouldMerge) {
         
         // Close modal on successful login
         authModal.classList.remove('visible');
+        
+        // Initialize Socket.IO connection AFTER successful login
+        initializeSocket();
         
         // Fetch server notes first, BEFORE merge attempt
         const serverNotes = await fetchNotes(); // <-- Capture the returned notes
@@ -957,6 +963,12 @@ async function deleteNote(noteId) {
 
 // Logout function
 async function logout() {
+    // Disconnect Socket.IO before clearing local data
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
+
     try {
         // Call the backend logout, even if it just clears session
         // The client-side token removal is the main part for JWT logout
@@ -1259,6 +1271,124 @@ function initThemeAndFontOptions() {
             option.classList.add('active');
         }
     });
+}
+
+// Function to initialize Socket.IO connection
+function initializeSocket() {
+    // Disconnect existing socket if any
+    if (socket) {
+        console.log('Disconnecting existing socket...');
+        socket.disconnect();
+        socket = null;
+    }
+
+    // Only connect if we have a token
+    if (currentToken) {
+        console.log('Attempting to connect Socket.IO...');
+        socket = io({
+            // Send token for authentication
+            auth: {
+                token: currentToken
+            }
+            // Optional: Add reconnection attempts etc.
+            // reconnectionAttempts: 5,
+        });
+
+        socket.on('connect', () => {
+            console.log('Socket.IO connected successfully:', socket.id);
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('Socket.IO disconnected:', reason);
+            // Optionally attempt to reconnect or notify user
+            socket = null; // Clear socket variable
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Socket.IO connection error:', err.message);
+            // Handle auth errors potentially
+            if (err.message.includes("Invalid token")) {
+                 // Token might be expired/invalid, force logout or re-login prompt
+                 console.log("Socket auth failed, logging out.");
+                 logout(); // Or show a specific message
+            }
+        });
+
+        // --- Listen for note updates ---
+        socket.on('note_updated', (updatedNote) => {
+            console.log('Received note_updated event:', updatedNote);
+
+             // Find the note in the local array
+             const noteIndex = notes.findIndex(note => note.id === updatedNote.id);
+
+             let needsListRender = false;
+             let needsViewRender = false;
+
+             if (noteIndex !== -1) {
+                 // Check if timestamp is newer to avoid race conditions (optional but good)
+                 if (new Date(updatedNote.updated_at) > new Date(notes[noteIndex].updated_at)) {
+                     console.log(`Updating local note ${updatedNote.id}`);
+                     // Update local data
+                     const oldTitle = notes[noteIndex].title;
+                     notes[noteIndex].title = updatedNote.title;
+                     notes[noteIndex].content = updatedNote.content;
+                     notes[noteIndex].updated_at = updatedNote.updated_at; // Update timestamp
+
+                     // Mark for UI updates
+                     if (oldTitle !== updatedNote.title) {
+                          needsListRender = true; // Title changed, update list
+                     }
+
+                     // If this is the currently viewed note, update the editor
+                     if (currentNoteId === updatedNote.id) {
+                         needsViewRender = true; // Content likely changed
+                     }
+
+                     // Re-sort notes based on the new timestamp
+                     notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                     needsListRender = true; // Order might have changed
+
+                 } else {
+                      console.log(`Ignoring stale update for note ${updatedNote.id}`);
+                 }
+
+             } else {
+                 // Note doesn't exist locally (maybe created on another device?)
+                 // You could add logic here to insert it if needed, requires a 'note_created' event
+                 console.log(`Received update for unknown note ID ${updatedNote.id}`);
+             }
+
+             // Apply UI updates if needed
+             if (needsListRender) {
+                  renderNotesList(); // Update sidebar titles/order
+             }
+             if (needsViewRender) {
+                 // Re-render the currently viewed note
+                 const noteContentView = document.getElementById('note-content');
+                 if (noteContentView) {
+                     // Preserve cursor/scroll position if possible (basic example)
+                     const selectionStart = noteContentView.selectionStart;
+                     const selectionEnd = noteContentView.selectionEnd;
+                     const scrollTop = noteContentView.scrollTop;
+
+                     // Update the textarea content (title + content)
+                     const combinedContent = `${updatedNote.title || ''}\n${updatedNote.content || ''}`;
+                     noteContentView.value = combinedContent;
+
+                     // Restore cursor/scroll (might need adjustment)
+                     noteContentView.selectionStart = selectionStart;
+                     noteContentView.selectionEnd = selectionEnd;
+                     noteContentView.scrollTop = scrollTop;
+                 } else {
+                      // Fallback: re-render the whole view (loses cursor)
+                      renderNoteView(notes[noteIndex]);
+                 }
+             }
+        });
+
+    } else {
+        console.log('No token found, skipping Socket.IO connection.');
+    }
 }
 
 // Initialize the app

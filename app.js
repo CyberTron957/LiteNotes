@@ -10,10 +10,18 @@ const nodemailer = require('nodemailer');
 const { exec } = require('child_process'); // Keep for sendResetEmail function
 // Remove axios if not needed elsewhere: const axios = require('axios'); 
 const redis = require('redis');
+// Import http and Socket.IO
+const http = require('http'); // Added
+const { Server } = require("socket.io"); // Added
 
 require('dotenv').config();
 
 const app = express();
+// Create HTTP server from Express app
+const server = http.createServer(app); // Added
+// Initialize Socket.IO server
+const io = new Server(server); // Added
+
 const PORT = process.env.PORT || 3000;
 // Load SECRET_KEY from environment, provide a default ONLY for dev if not set
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -315,6 +323,51 @@ async function getUserDecryptionKey(userId) { // Make async
         return null;
     }
 }
+
+// --- Socket.IO Authentication Middleware --- Added
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token; // Get token sent from client
+    if (!token) {
+        console.log("Socket Auth: No token provided");
+        return next(new Error("Authentication error: No token provided"));
+    }
+    if (!SECRET_KEY) {
+        console.error("Socket Auth: SECRET_KEY not configured");
+        return next(new Error("Server configuration error"));
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            console.log("Socket Auth: Invalid token", err.message);
+            return next(new Error("Authentication error: Invalid token"));
+        }
+        // Attach user info to the socket object for later use
+        socket.user = { id: decoded.id, username: decoded.username };
+        next();
+    });
+});
+
+// --- Socket.IO Connection Handling --- Added
+io.on('connection', (socket) => {
+    console.log(`Socket connected: ${socket.id}, User: ${socket.user?.username} (ID: ${socket.user?.id})`);
+
+    // Join a room specific to the user
+    if (socket.user?.id) {
+        const userRoom = `user-${socket.user.id}`;
+        socket.join(userRoom);
+        console.log(`Socket ${socket.id} joined room ${userRoom}`);
+    }
+
+    socket.on('disconnect', () => {
+        console.log(`Socket disconnected: ${socket.id}`);
+        // Socket.IO handles leaving rooms automatically on disconnect
+    });
+
+    // Handle potential errors on the socket
+    socket.on('error', (err) => {
+        console.error(`Socket error on ${socket.id}:`, err.message);
+    });
+});
 
 // Routes
 // Register
@@ -620,19 +673,39 @@ app.put('/notes/:id', authenticateToken, async (req, res) => {
     }
 
     try {
-        // Encrypt new title and content
         const encryptedTitle = title ? encryptData(title, userKey) : null;
         const encryptedContent = content ? encryptData(content, userKey) : null;
 
         const result = await pool.query(
             'UPDATE notes SET title = $1, content = $2 WHERE id = $3 AND user_id = $4 RETURNING updated_at',
-            [encryptedTitle, encryptedContent, noteId, userId] // Store encrypted data
+            [encryptedTitle, encryptedContent, noteId, userId]
         );
 
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Note not found or user mismatch' });
         }
-        res.json({ message: 'Note updated', updated_at: result.rows[0].updated_at });
+
+        const updatedTimestamp = result.rows[0].updated_at;
+
+        // --- Emit update via Socket.IO --- Added
+        const userRoom = `user-${userId}`;
+        const updatePayload = {
+            id: parseInt(noteId, 10), // Ensure ID is a number
+            title: title, // Send plain text
+            content: content, // Send plain text
+            updated_at: updatedTimestamp
+        };
+
+        // Emit to the user's room, excluding the socket that initiated the change
+        // We need the socket ID from the original request if possible,
+        // but since HTTP requests don't easily map to socket IDs,
+        // we might just emit to the room. The client needs logic to ignore self-updates.
+        // A simpler approach for now: emit to the room. Client handles it.
+        io.to(userRoom).emit('note_updated', updatePayload);
+        console.log(`Emitted note_updated to room ${userRoom} for note ${noteId}`);
+        // --- End Emit ---
+
+        res.json({ message: 'Note updated', updated_at: updatedTimestamp });
     } catch (err) {
         console.error('Update note error:', err.stack);
         res.status(500).json({ message: 'Error updating note' });
@@ -807,7 +880,9 @@ app.use((err, req, res, next) => {
 });
 
 
-app.listen(PORT, () => {
+// --- Start Server ---
+// Use the http server to listen, not the Express app directly
+server.listen(PORT, () => { // Changed from app.listen to server.listen
     console.log(`Server running on port ${PORT}`);
     if (!process.env.SECRET_KEY) {
         console.warn("!!! REMINDER: SECRET_KEY is not set in .env. Application is insecure. !!!");
