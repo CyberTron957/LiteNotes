@@ -920,10 +920,11 @@ body {
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 500px) {
-    .palette-columns {
+    /* Palette columns are already set to column in the 768px query */
+    /* .palette-columns {
         flex-direction: column;
         gap: 20px;
-    }
+    } */
     
     /* No need to override width here anymore, handled by max-width */
     /* .theme-palette {
