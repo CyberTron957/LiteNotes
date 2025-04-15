@@ -733,7 +733,7 @@ async function createNewNote() {
                 },
                 body: JSON.stringify({
                     title: 'Untitled',
-                    content: ''
+                    content: 'Start typing...'
                 })
             });
             
@@ -746,7 +746,7 @@ async function createNewNote() {
             const newNote = {
                 id: data.id,
                 title: 'Untitled',
-                content: '',
+                content: 'Start typing...',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString() // Add updated_at
             };
@@ -763,7 +763,7 @@ async function createNewNote() {
         const newNote = {
             id: `local-${Date.now()}`, 
             title: 'Untitled',
-            content: '',
+            content: 'Start typing...',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString() // Add updated_at
         };
@@ -839,13 +839,13 @@ async function saveCurrentNote() {
     }
 
     title = title.trim(); // Trim whitespace from title
-    // If title is empty after trimming, treat as Untitled
-    const finalTitle = title === '' ? 'Untitled' : title;
+    // Use the title as-is, even if empty - no automatic "Untitled" replacement
+    // const finalTitle = title === '' ? 'Untitled' : title;
 
     // Update local array first for responsiveness
     const noteIndex = notes.findIndex(note => note.id === currentNoteId);
     if (noteIndex !== -1) {
-        notes[noteIndex].title = finalTitle;
+        notes[noteIndex].title = title; // Use the exact title without defaulting
         notes[noteIndex].content = content;
         notes[noteIndex].updated_at = new Date().toISOString(); // Update timestamp
         
@@ -864,7 +864,7 @@ async function saveCurrentNote() {
                     'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ title: finalTitle, content })
+                body: JSON.stringify({ title: title, content })
             });
             
             if (!response.ok) {
@@ -1068,7 +1068,7 @@ async function mergeLocalNotesWithServer(localNotes, serverNotes) {
                     },
                     body: JSON.stringify({ 
                         title: localNote.title || 'Untitled', 
-                        content: localNote.content || '' 
+                        content: localNote.content || 'Start typing...' 
                     })
                 })
                 .then(response => {
