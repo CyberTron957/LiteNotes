@@ -79,7 +79,7 @@
             text-align: center;
             flex: 1;
             padding: 2rem 0;
-            max-width: 700px;
+            max-width: 1000px;
             margin: 0 auto;
             position: relative;
         }
@@ -181,12 +181,15 @@
         }
         
         .demo-image {
+            display: block;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
+            object-fit: contain;
             border-radius: var(--radius);
             border: 1px solid var(--border);
             margin: 3rem auto;
             box-shadow: var(--shadow);
+            background-color: var(--bg-secondary);
         }
         
         .home-footer {
@@ -281,11 +284,14 @@
             <p class="hero-subtitle">A fast, secure, and minimalist notes application with end-to-end encryption and offline support. Your thoughts stay private, synced, and always available.</p>
             
             <div class="cta-buttons">
-                <a href="/app" class="cta-primary">Get Started <i class="fas fa-arrow-right"></i></a>
+                <a href="/" class="cta-primary">Get Started <i class="fas fa-arrow-right"></i></a>
                 <a href="#features" class="cta-secondary">Learn More</a>
             </div>
-            
-            <img src="images/app-screenshot.png" alt="LiteNotes App Screenshot" class="demo-image">
+            <video autoplay loop muted playsinline preload="metadata" class="demo-image">
+                <source src="images/mockup.mp4" type="video/mp4">
+                <source src="images/mockup.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
         </section>
         
         <section id="features" class="features">
