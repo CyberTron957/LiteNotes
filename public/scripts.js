@@ -44,6 +44,29 @@ let isPaletteOpen = false;
 let currentFont = 'inter'; // Default font
 let currentBackground = 'none'; // Default background
 let socket = null;
+let isOffline = !navigator.onLine; // Track online/offline status
+
+// Set up offline/online event listeners
+window.addEventListener('online', handleOnlineStatusChange);
+window.addEventListener('offline', handleOnlineStatusChange);
+
+// Handle online/offline status changes
+function handleOnlineStatusChange() {
+    const wasOffline = isOffline;
+    isOffline = !navigator.onLine;
+    
+    if (wasOffline && !isOffline) {
+        // Went from offline to online
+        showToast('Connected! You are back online.', 'success');
+        // Try to sync local changes if user is logged in
+        if (currentToken) {
+            fetchNotes();
+        }
+    } else if (!wasOffline && isOffline) {
+        // Went from online to offline
+        showToast('Offline mode enabled. Changes will be saved locally.', 'info');
+    }
+}
 
 // Event Listeners
 showRegister.addEventListener('click', () => {
@@ -530,7 +553,14 @@ async function register() {
 
 // Fetch all notes (from server)
 async function fetchNotes() {
-    if (!currentToken) return null; 
+    if (!currentToken) return null;
+    
+    // If offline, don't attempt to fetch from server
+    if (isOffline) {
+        showToast('Working offline. Your notes are saved locally.', 'info');
+        return notes; // Return current notes array
+    }
+    
     //console.log("Fetching notes from server...");
     try {
         const response = await fetch('/notes', {
@@ -567,10 +597,13 @@ async function fetchNotes() {
         return fetchedNotes; // <-- RETURN the fetched notes
 
     } catch (error) {
-        showToast(error.message, 'error');
-        notes = []; // Clear notes on error
-        renderNotesList(); // Render empty list
-        return []; // Return empty array on error
+        if (isOffline) {
+            showToast('Working offline. Your notes are saved locally.', 'info');
+        } else {
+            showToast('Error connecting to server. Working in offline mode.', 'warning');
+            isOffline = true; // Manually set offline mode
+        }
+        return notes; // Return current notes (may be empty or from local storage)
     }
 }
 
@@ -592,6 +625,7 @@ function renderNotesList() {
         if (currentNoteId === note.id) {
             noteItem.classList.add('active');
         }
+        // Display "Untitled" in the sidebar for empty titles, but keep the actual title empty
         noteItem.textContent = note.title || 'Untitled';
         // Ensure note IDs are unique for local notes
         noteItem.dataset.noteId = note.id;
@@ -722,8 +756,8 @@ function renderEmptyNoteView() {
 
 // Create a new note
 async function createNewNote() {
-    if (currentToken) {
-        // Logged in: Create on server
+    if (currentToken && !isOffline) {
+        // Logged in and online: Create on server
         try {
             const response = await fetch('/notes', {
                 method: 'POST',
@@ -732,21 +766,30 @@ async function createNewNote() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    title: 'Untitled',
-                    content: 'Start typing...'
+                    title: '',
+                    content: ''
                 })
             });
             
             if (!response.ok) {
-                throw new Error('Failed to create note on server');
+                // Check if it's a network error
+                if (response.status === 0) {
+                    isOffline = true;
+                    showToast('Network unavailable. Working in offline mode.', 'info');
+                    // Fall back to local note creation
+                    createLocalNote();
+                    return;
+                } else {
+                    throw new Error('Failed to create note on server');
+                }
             }
             
             const data = await response.json();
             
             const newNote = {
                 id: data.id,
-                title: 'Untitled',
-                content: 'Start typing...',
+                title: '',
+                content: '',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString() // Add updated_at
             };
@@ -756,23 +799,36 @@ async function createNewNote() {
             renderNotesList();
             selectNote(newNote.id);
         } catch (error) {
-            showToast(error.message, 'error');
+            // Check if it's a network error
+            if (!navigator.onLine || error.message.includes('network') || error.message.includes('fetch')) {
+                isOffline = true;
+                showToast('Network unavailable. Working in offline mode.', 'info');
+                // Fall back to local note creation
+                createLocalNote();
+            } else {
+                showToast(error.message, 'error');
+            }
         }
     } else {
-        // Not logged in: Create locally
-        const newNote = {
-            id: `local-${Date.now()}`, 
-            title: 'Untitled',
-            content: 'Start typing...',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString() // Add updated_at
-        };
-        notes.unshift(newNote);
-        // No need to sort here
-        saveLocalNotes(); // Save to local storage
-        renderNotesList();
-        selectNote(newNote.id);
+        // Not logged in or offline: Create locally
+        createLocalNote();
     }
+}
+
+// Helper function to create a local note
+function createLocalNote() {
+    const newNote = {
+        id: `local-${Date.now()}`, 
+        title: '',
+        content: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString() // Add updated_at
+    };
+    notes.unshift(newNote);
+    // No need to sort here
+    saveLocalNotes(); // Save to local storage
+    renderNotesList();
+    selectNote(newNote.id);
 }
 
 // Schedule a note save (debounce)
@@ -855,8 +911,8 @@ async function saveCurrentNote() {
         renderNotesList(); // Update title/order in sidebar immediately
     }
 
-    if (currentToken) {
-        // Logged in: Save to server
+    if (currentToken && !isOffline) {
+        // Logged in and online: Save to server
         try {
             const response = await fetch(`/notes/${currentNoteId}`, {
                 method: 'PUT',
@@ -868,13 +924,20 @@ async function saveCurrentNote() {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to save note to server');
+                if (response.status === 0) {
+                    // Network error - likely offline
+                    isOffline = true;
+                    showToast('Network unavailable. Working in offline mode.', 'info');
+                    saveLocalNotes(); // Save locally as fallback
+                } else {
+                    throw new Error('Failed to save note to server');
+                }
+            } else {
+                // Update save indicator dot to green (saved)
+                saveStatusDot.classList.remove('saving', 'error');
+                saveStatusDot.classList.add('saved', 'visible');
             }
             
-            // Update save indicator dot to green (saved)
-            saveStatusDot.classList.remove('saving', 'error');
-            saveStatusDot.classList.add('saved', 'visible');
-
             // Set timeout to hide the dot after a delay
             clearTimeout(statusDotFadeTimeout);
             statusDotFadeTimeout = setTimeout(() => {
@@ -887,13 +950,24 @@ async function saveCurrentNote() {
             }
 
         } catch (error) {
-            showToast(error.message, 'error');
-            // Indicate error with red dot
-            saveStatusDot.classList.remove('saving', 'saved');
-            saveStatusDot.classList.add('error', 'visible');
+            // Check if it's a network error
+            if (!navigator.onLine || error.message.includes('network') || error.message.includes('fetch')) {
+                isOffline = true;
+                showToast('Network unavailable. Working in offline mode.', 'info');
+                saveLocalNotes(); // Save locally as fallback
+                
+                // Update dot to indicate local save (still green)
+                saveStatusDot.classList.remove('saving', 'error');
+                saveStatusDot.classList.add('saved', 'visible');
+            } else {
+                showToast(error.message, 'error');
+                // Indicate error with red dot
+                saveStatusDot.classList.remove('saving', 'saved');
+                saveStatusDot.classList.add('error', 'visible');
+            }
         }
     } else {
-        // Not logged in: Save locally
+        // Not logged in or offline: Save locally
         saveLocalNotes();
         // Update dot to indicate local save (green)
         saveStatusDot.classList.remove('saving', 'error');
@@ -926,8 +1000,8 @@ function showToast(message, type = 'success') {
 
 // Delete note function
 async function deleteNote(noteId) {
-     if (currentToken) {
-        // Logged in: Delete from server
+    if (currentToken && !isOffline) {
+        // Logged in and online: Delete from server
         try {
             const response = await fetch(`/notes/${noteId}`, {
                 method: 'DELETE',
@@ -937,21 +1011,35 @@ async function deleteNote(noteId) {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to delete note from server');
+                // Check if it's a network error
+                if (response.status === 0) {
+                    isOffline = true;
+                    showToast('Network unavailable. Deleted note locally only.', 'info');
+                    // Continue with local deletion
+                } else {
+                    throw new Error('Failed to delete note from server');
+                }
             }
             
-            // Remove note from local array (already done below)
+            // Successfully deleted from server, proceed with local deletion
         } catch (error) {
-            showToast(error.message, 'error');
-            return; // Stop if server delete failed
+            // Check if it's a network error
+            if (!navigator.onLine || error.message.includes('network') || error.message.includes('fetch')) {
+                isOffline = true;
+                showToast('Network unavailable. Deleted note locally only.', 'info');
+                // Continue with local deletion
+            } else {
+                showToast(error.message, 'error');
+                return; // Stop if server delete failed for a reason other than network
+            }
         }
     }
     
     // Remove note from local array (for both logged in and local)
     notes = notes.filter(note => note.id !== noteId);
     
-    if (!currentToken) {
-        saveLocalNotes(); // Update local storage if not logged in
+    if (!currentToken || isOffline) {
+        saveLocalNotes(); // Update local storage if not logged in or offline
     }
     
     // Update UI
@@ -1067,8 +1155,8 @@ async function mergeLocalNotesWithServer(localNotes, serverNotes) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        title: localNote.title || 'Untitled', 
-                        content: localNote.content || 'Start typing...' 
+                        title: localNote.title || '', 
+                        content: localNote.content || '' 
                     })
                 })
                 .then(response => {

@@ -310,19 +310,18 @@ body {
 }
 
 .note-editor {
+    padding: 50px 100px;
+    padding-bottom: 30vh;
     width: 100%;
     height: 100%;
     background: transparent;
+    resize: none;
     border: none;
-    color: var(--text-primary);
+    outline: none;
     font-size: 1.1rem;
     line-height: 1.6;
-    resize: none;
-    outline: none;
-    padding: 50px 100px;
-    border-radius: 0;
+    color: var(--text-primary);
     overflow-y: auto;
-    padding-bottom: 50vh;
 }
 
 .note-editor:focus {
@@ -349,13 +348,18 @@ body {
     background-color: var(--text-secondary);
 }
 
-/* Style first line (Title) - May have limited browser support */
+/* Style first line (Title) */
 .note-editor::first-line {
     font-size: 1.8em;
     font-weight: 600;
     line-height: 1.4;
     display: block;
     margin-bottom: 0.5em;
+}
+
+/* Add padding after the first line break to separate title from content */
+.note-editor:not(:empty) {
+    padding-top: 3.5em; /* Increased top padding to accommodate the title + spacing */
 }
 
 .auth-container {
@@ -1546,14 +1550,4 @@ body {
         top: 20px; /* Match mobile padding */
         left: 15px; /* Match mobile padding */
     }
-}
-
-/* Existing style for first line - MAY NOT WORK RELIABLY with contenteditable */
-/* Consider manual title handling if this breaks */
-.note-editor::first-line {
-    font-size: 1.8em;
-    font-weight: 600;
-    line-height: 1.4;
-    display: block;
-    margin-bottom: 0.5em;
 }
