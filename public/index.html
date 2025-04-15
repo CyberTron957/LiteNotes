@@ -67,6 +67,23 @@
         </div>
     </div>
 
+    <!-- Merge Notes Modal -->
+    <div id="merge-notes-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="auth-header">
+                <h1>Merge Notes</h1>
+                <p class="auth-subtitle">You have unsaved local notes</p>
+            </div>
+            <div class="merge-content">
+                <p>Would you like to upload your local notes to your account?</p>
+            </div>
+            <div class="merge-actions">
+                <button id="merge-cancel-btn" class="btn btn-secondary">No, Discard</button>
+                <button id="merge-confirm-btn" class="btn btn-primary">Yes, Upload</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main App -->
     <div id="app-container" class="container sidebar-hidden" style="display: none;">
         <div class="sidebar">
@@ -187,6 +204,17 @@
                     <h2>No note selected</h2>
                     <p>Select a note from the sidebar or create a new one to get started.</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Popup -->
+    <div id="delete-confirm-popup" class="popup-overlay">
+        <div class="popup-content">
+            <p>Delete this note?</p>
+            <div class="popup-actions">
+                <button id="delete-cancel-btn" class="popup-btn popup-btn-secondary">No</button>
+                <button id="delete-confirm-btn" class="popup-btn popup-btn-primary">Yes</button>
             </div>
         </div>
     </div>

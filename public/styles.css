@@ -759,6 +759,29 @@ body {
     color: var(--text-primary);
 }
 
+/* Merge notes modal styles */
+.merge-content {
+    margin: 1.5rem 0;
+    line-height: 1.5;
+}
+
+.merge-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-secondary {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--hover);
+    transform: translateY(-2px);
+}
+
 /* Mobile Optimization */
 @media (max-width: 768px) {
     .container {
@@ -1314,4 +1337,68 @@ body {
         bottom: 20px; /* Keep at same position */
         opacity: 0.5; /* Make it semi-transparent when palette is open */
     }
+}
+
+/* Delete confirmation popup styles */
+.popup-overlay {
+    position: fixed;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    /* No background color - this is a small contextual popup */
+}
+
+.popup-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    max-width: 200px;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+    text-align: center;
+}
+
+.popup-overlay.visible .popup-content {
+    transform: scale(1);
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 8px;
+}
+
+.popup-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.popup-btn-primary {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+.popup-btn-secondary {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.popup-btn:hover {
+    transform: translateY(-1px);
 }

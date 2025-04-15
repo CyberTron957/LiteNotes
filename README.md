@@ -4,7 +4,9 @@
 
 LiteNotes is a fast, secure, and minimalist web-based notes application built with Node.js, Express.js, PostgreSQL, and Redis. It allows users to create, edit, and delete notes with a clean, customizable interface, featuring end-to-end encryption, robust authentication, and real-time saving.
 
-
+<!-- Placeholder for a general app screenshot -->
+![LiteNotes Desktop View](path/to/your/desktop_screenshot.png)
+*LiteNotes Desktop Interface*
 
 ## Table of Contents
 

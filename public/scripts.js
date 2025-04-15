@@ -349,21 +349,43 @@ async function login() {
         return;
     }
 
-    // Confirm merge/upload if local notes exist
+    // Check if there are local notes
     const localNotesRaw = localStorage.getItem('localNotes');
     const localNotesExist = localNotesRaw && localNotesRaw !== '[]';
-    let proceedWithLogin = true; // Flag to track if login should proceed
 
     if (localNotesExist) {
-        if (!confirm('You have unsaved local notes. Logging in will attempt to upload these notes to your account. Continue?')) {
-             proceedWithLogin = false;
-             return; // Stop login if user cancels merge confirmation
-        }
+        // Show custom merge modal instead of confirm dialog
+        showMergeNotesModal(username, password);
+        return; // Exit the function here; the actual login will happen after user's choice
     }
 
-    // If user cancelled, the function would have returned already
-    // Proceed with fetch/login only if proceedWithLogin is true (implicitly)
+    // If no local notes, proceed with login directly
+    await performLogin(username, password, false);
+}
+
+// Function to show the merge notes modal
+function showMergeNotesModal(username, password) {
+    const mergeModal = document.getElementById('merge-notes-modal');
+    const confirmBtn = document.getElementById('merge-confirm-btn');
+    const cancelBtn = document.getElementById('merge-cancel-btn');
     
+    // Show the modal
+    mergeModal.classList.add('visible');
+    
+    // Setup event listeners for the buttons
+    confirmBtn.onclick = async () => {
+        mergeModal.classList.remove('visible');
+        await performLogin(username, password, true); // Login with merge=true
+    };
+    
+    cancelBtn.onclick = async () => {
+        mergeModal.classList.remove('visible');
+        await performLogin(username, password, false); // Login with merge=false
+    };
+}
+
+// Separated login functionality to be called after user decision
+async function performLogin(username, password, shouldMerge) {
     try {
         const response = await fetch('/login', {
             method: 'POST',
@@ -395,8 +417,11 @@ async function login() {
         // Fetch server notes first, BEFORE merge attempt
         const serverNotes = await fetchNotes(); // <-- Capture the returned notes
 
-        // Attempt to merge local notes if they existed
-        if (localNotesExist && serverNotes) { // Ensure serverNotes is not null/undefined
+        // Attempt to merge local notes if they existed and user chose to merge
+        const localNotesRaw = localStorage.getItem('localNotes');
+        const localNotesExist = localNotesRaw && localNotesRaw !== '[]';
+        
+        if (localNotesExist && shouldMerge && serverNotes) {
              //console.log("Starting merge process...");
              await mergeLocalNotesWithServer(JSON.parse(localNotesRaw), serverNotes);
              //console.log("Merge process finished. Clearing local notes and fetching final list.");
@@ -404,6 +429,10 @@ async function login() {
              localStorage.removeItem('localNotes');
              // Re-fetch the final merged list from the server to ensure consistency
              await fetchNotes(); 
+        } else if (localNotesExist && !shouldMerge) {
+             // User chose NOT to merge - just clear local notes
+             localStorage.removeItem('localNotes');
+             // No need to re-fetch; serverNotes already contains the server state
         } else {
              //console.log("No local notes to merge or server notes fetch failed.");
              // If no merge happened, the global `notes` variable was already updated 
@@ -626,8 +655,39 @@ function renderNoteView(note) {
 
     // Add delete note functionality
     deleteNoteBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to delete this note?')) {
-            deleteNote(note.id);
+        showDeleteConfirmation(note.id, deleteNoteBtn);
+    });
+}
+
+// Show delete confirmation popup
+function showDeleteConfirmation(noteId, buttonElement) {
+    const popup = document.getElementById('delete-confirm-popup');
+    const confirmBtn = document.getElementById('delete-confirm-btn');
+    const cancelBtn = document.getElementById('delete-cancel-btn');
+    
+    // Position the popup near the delete button
+    const buttonRect = buttonElement.getBoundingClientRect();
+    popup.style.top = `${buttonRect.bottom + 10}px`;
+    popup.style.left = `${buttonRect.left - 160 + buttonRect.width / 2}px`; // Center it near the button
+    
+    // Show the popup
+    popup.classList.add('visible');
+    
+    // Handle button clicks
+    confirmBtn.onclick = () => {
+        popup.classList.remove('visible');
+        deleteNote(noteId);
+    };
+    
+    cancelBtn.onclick = () => {
+        popup.classList.remove('visible');
+    };
+    
+    // Close popup when clicking outside
+    document.addEventListener('click', function closePopup(e) {
+        if (!popup.contains(e.target) && e.target !== buttonElement) {
+            popup.classList.remove('visible');
+            document.removeEventListener('click', closePopup);
         }
     });
 }

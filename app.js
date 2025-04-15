@@ -457,12 +457,13 @@ app.post('/login', async (req, res) => {
             return res.status(500).json({ message: 'Failed to access encryption key.' });
         }
 
-        // Store the decrypted key in Redis with expiration (extend this to match JWT)
+        // Store the decrypted key in Redis with expiration (slightly longer than JWT)
         try {
             const redisKey = `userKey:${user.id}`;
+            // Set expiry to 30 days + 1 hour buffer (in seconds)
+            const expirySeconds = (30 * 24 * 60 * 60) + (60 * 60);
             await redisClient.set(redisKey, decryptedUserDataKeyHex, {
-                // Use a much longer expiration time (30 days in seconds)
-                EX: 30 * 24 * 60 * 60 // 30 days expiry
+                EX: expirySeconds
             });
             console.log(`User ${user.id} key decrypted and cached in Redis.`);
         } catch (redisErr) {
@@ -493,32 +494,36 @@ app.post('/login', async (req, res) => {
 app.post('/logout', authenticateToken, async (req, res) => {
     const userId = req.user?.id;
 
-    // Clear the cached key from Redis
-    if (userId) {
-        try {
-            const redisKey = `userKey:${userId}`;
-            const deletedCount = await redisClient.del(redisKey);
-            if (deletedCount > 0) {
-                console.log(`Cleared cached key from Redis for user ${userId}`);
-            }
-        } catch(redisErr) {
-            console.error('Redis DEL error during logout:', redisErr);
-            // Log error but proceed with logout as Redis failure isn't critical here
-        }
-    }
+    // Clear the cached key from Redis - REMOVED FOR MULTI-DEVICE LOGIN
+    // if (userId) {
+    //     try {
+    //         const redisKey = `userKey:${userId}`;
+    //         const deletedCount = await redisClient.del(redisKey);
+    //         if (deletedCount > 0) {
+    //             console.log(`Cleared cached key from Redis for user ${userId}`);
+    //         }
+    //     } catch(redisErr) {
+    //         console.error('Redis DEL error during logout:', redisErr);
+    //         // Log error but proceed with logout as Redis failure isn't critical here
+    //     }
+    // }
 
-    // For JWT, logout is typically handled client-side by discarding the token.
-    // If using sessions alongside JWT, you might destroy the session here.
+    // --- Existing session destroy logic if applicable --- 
+    // If you are using server-side sessions alongside JWT, keep this:
     if (req.session) {
         req.session.destroy((err) => {
             if (err) {
                 console.error("Session destroy error:", err);
-                return res.status(500).json({ message: 'Error logging out' });
+                // Still respond, but log the error
+                return res.status(500).json({ message: 'Error during session logout' });
             }
-             res.json({ message: 'Logged out successfully (session destroyed)' });
+             console.log(`Session destroyed for user ${userId || '(unknown)'}`);
+             // Respond *after* session destruction attempt
+             res.json({ message: 'Logged out successfully' });
         });
     } else {
-         res.json({ message: 'Logged out successfully (token needs discarding client-side)' });
+        // If only using JWT, no server-side session action needed
+         res.json({ message: 'Logged out successfully' });
     }
 });
 
