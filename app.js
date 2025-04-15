@@ -7,10 +7,8 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { exec } = require('child_process'); // Keep for sendResetEmail function
-// Remove axios if not needed elsewhere: const axios = require('axios'); 
+const { exec } = require('child_process'); 
 const redis = require('redis');
-// Import http and Socket.IO
 const http = require('http'); // Added
 const { Server } = require("socket.io"); // Added
 

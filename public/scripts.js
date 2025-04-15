@@ -74,6 +74,11 @@ sidebarToggle.addEventListener('click', toggleSidebar);
 
 // Show login modal
 showLoginBtn.addEventListener('click', () => {
+    // Close mobile sidebar if open before showing modal
+    if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-visible')) {
+        toggleMobileSidebar();
+    }
+    
     authModal.classList.add('visible');
     // Ensure login form is visible by default when modal opens
     registerForm.style.display = 'none';
@@ -192,12 +197,14 @@ function handleResize() {
     if (window.innerWidth <= 768) {
         // Mobile view
         createMobileElements();
-        // Ensure sidebar is initially hidden on mobile load/resize
+        // Ensure sidebar is initially hidden and body class is set
         document.body.classList.remove('sidebar-visible');
+        appContainer.classList.add('sidebar-hidden-init-mobile'); // Use a temp class if needed
         // Remove desktop classes if present
         appContainer.classList.remove('sidebar-hidden');
     } else {
         // Desktop view
+        appContainer.classList.remove('sidebar-hidden-init-mobile'); // Remove temp class
         document.body.classList.remove('sidebar-visible'); // Ensure mobile class is removed
         const storedState = localStorage.getItem('sidebarState');
         if (storedState === 'visible') {
@@ -213,9 +220,6 @@ function handleResize() {
 
 // Check auth status and initialize app
 async function initializeApp() {
-    // Create mobile elements
-    createMobileElements();
-    
     // Handle mobile/desktop view on startup first
     handleResize(); 
 
@@ -292,7 +296,11 @@ async function initializeApp() {
     }
 
     // Ensure app container is visible AFTER potentially loading notes
-    appContainer.style.display = 'flex'; 
+    appContainer.style.display = 'flex';
+    // Force a style recalculation maybe?
+    window.getComputedStyle(appContainer).display;
+    // Remove temporary mobile init class after display
+    appContainer.classList.remove('sidebar-hidden-init-mobile');
 
     // If no notes exist after loading, create a default one
     if (notes.length === 0) {

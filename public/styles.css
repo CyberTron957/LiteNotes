@@ -683,7 +683,7 @@ body {
     opacity: 0;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     position: fixed;
-    bottom: 85px;
+    bottom:auto;
     right: 25px;
     z-index: 1001;
 }
@@ -864,6 +864,9 @@ body {
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
+    .save-status-dot{
+        bottom:80px;
+    }
 
     /* Overlay visible state */
     body.sidebar-visible .sidebar-overlay {
@@ -929,6 +932,24 @@ body {
         padding-bottom: 30vh; /* Adjust bottom padding for mobile */
         
         font-size: 19px; /* Adjust font size for mobile readability */
+    }
+
+    /* Make delete note button always visible and positioned correctly on mobile */
+    .note-actions .delete-note {
+        display: flex !important; /* Ensure it's always visible */
+        position: absolute; /* Position within note-actions */
+        top: 0; /* Align to top of note-actions */
+        right: 0; /* Align to right of note-actions */
+        /* Reset any desktop positioning if needed */
+    }
+    
+    /* Adjust positioning container if needed */
+    .note-actions {
+        position: absolute;
+        top: 15px; /* Adjust as needed */
+        right: 15px; /* Adjust as needed */
+        z-index: 10; /* Ensure it's above editor */
+        height: 36px; /* Give it a defined height */
     }
 }
 
