@@ -4,9 +4,7 @@
 
 LiteNotes is a fast, secure, and minimalist web-based notes application built with Node.js, Express.js, PostgreSQL, and Redis. It allows users to create, edit, and delete notes with a clean, customizable interface, featuring end-to-end encryption, robust authentication, and real-time saving.
 
-<!-- Placeholder for a general app screenshot -->
-![LiteNotes Desktop View](path/to/your/desktop_screenshot.png)
-*LiteNotes Desktop Interface*
+
 
 ## Table of Contents
 
@@ -75,8 +73,8 @@ Follow these instructions to set up and run the LiteNotes application locally.
 ### Cloning the Repository
 
 ```bash
-git clone https://your-repository-url/litenotes.git # Replace with your repo URL
-cd litenotes
+git clone https://github.com/CyberTron957/LiteNotes
+cd LiteNotes
 ```
 
 ### Installation
@@ -89,11 +87,10 @@ npm install
 
 ### Configuration (.env)
 
-Create a `.env` file in the root of the project directory. Copy the contents of `.env.example` (if provided) or create it manually with the following variables:
+Create a `.env` file in the root of the project directory with the following variables:
 
 ```dotenv
 # Application Configuration
-PORT=3000
 SECRET_KEY=your_strong_jwt_secret_key_here # IMPORTANT: Generate a strong, random key
 
 # PostgreSQL Database Configuration
@@ -113,10 +110,6 @@ EMAIL_USER=your_mailtrap_username
 EMAIL_PASS=your_mailtrap_password
 # EMAIL_FROM='"LiteNotes App" <hello@demomailtrap.co>' # Optional: Override sender
 
-# IMPORTANT:
-# - Replace placeholders with your actual credentials.
-# - NEVER commit your .env file to version control. Add it to your .gitignore file.
-# - Generate a strong, unique SECRET_KEY.
 ```
 
 ### Database Setup
@@ -138,8 +131,6 @@ EMAIL_PASS=your_mailtrap_password
     ```
 
 3.  Open your web browser and navigate to `http://localhost:PORT` (e.g., `http://localhost:3000` if `PORT=3000`).
-
-## Project Structure
 
 ## Security Features
 
@@ -163,5 +154,5 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` file for more information (if you add one).
+Distributed under the MIT License.
 

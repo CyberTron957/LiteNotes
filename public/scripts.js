@@ -123,7 +123,6 @@ themeOptions.forEach(option => {
     option.addEventListener('click', function() {
         const theme = this.getAttribute('data-theme');
         setTheme(theme);
-        toggleThemePalette();
     });
 });
 
@@ -213,16 +212,25 @@ function handleResize() {
 
 // Check auth status and initialize app
 async function initializeApp() {
+    // Create mobile elements
+    createMobileElements();
+    
     // Handle mobile/desktop view on startup first
     handleResize(); 
 
     // Check for saved theme and font preferences
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
-        setTheme(savedTheme);
+        // Handle case where saved theme is 'dark' which we've removed
+        if (savedTheme === 'dark') {
+            // Use 'mono' as fallback for 'dark'
+            setTheme('mono');
+        } else {
+            setTheme(savedTheme);
+        }
     } else {
         // On first visit with no saved theme, use a random theme
-        const themes = ['dark', 'light', 'mono', 'sepia', 'slate', 'blue', 'mint', 'lavender', 'warm'];
+        const themes = ['light', 'mono', 'sepia', 'slate', 'blue', 'mint', 'lavender', 'warm'];
         const randomTheme = themes[Math.floor(Math.random() * themes.length)];
         setTheme(randomTheme);
     }
@@ -922,7 +930,7 @@ async function logout() {
         // Reset UI to logged-out state
         userInfoSection.style.display = 'none';
         signinPrompt.style.display = 'block';
-        setTheme('dark'); // Reset to default theme
+        setTheme('light'); // Reset to default theme
         setFont('inter'); // Reset to default font
         setBackground('none'); // Reset to default background
         loadLocalNotes(); // Load any potentially remaining local notes (though usually cleared)

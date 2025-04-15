@@ -569,7 +569,7 @@ body {
 
 .sidebar-toggle {
     position: absolute;
-    left: 210px;
+    left: 200px;
     bottom: 20px;
     background: var(--bg-secondary);
     width: 36px;
@@ -1100,7 +1100,11 @@ body {
     padding-left: 4px;
 }
 
-.theme-color.mono { background-color: #000000; border: 1px solid #333333; }
+.theme-color.mono { 
+    background-color: #000000; 
+    border: 1px solid #333333; 
+    border-radius: 50%;
+}
 .theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
 .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
 .theme-color.warm { background-color: #f9f5f1; border: 1px solid #e2d5c8; }
@@ -1287,5 +1291,27 @@ body {
         box-shadow: none;
         border: none;
         border-radius: 0;
+    }
+}
+
+/* Fix sidebar button overlap issue with popups */
+@media (max-width: 768px) {
+    /* Make sure theme palette is above sidebar toggle */
+    .theme-palette {
+        z-index: 1200; /* Increased z-index to be above sidebar toggle */
+    }
+
+    /* Make space between the sidebar toggle and palette */
+    .sidebar-toggle {
+        bottom: 20px;
+        right: 20px;
+        z-index: 1010; /* Keep toggle button above content but below palette */
+    }
+
+    /* When palette is open, adjust the toggle button position */
+    .theme-palette.active ~ .sidebar-toggle,
+    body:has(.theme-palette.active) .sidebar-toggle {
+        bottom: 20px; /* Keep at same position */
+        opacity: 0.5; /* Make it semi-transparent when palette is open */
     }
 }

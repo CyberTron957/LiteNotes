@@ -1,12 +1,11 @@
 const express = require('express');
 const session = require('express-session');
-// Remove sqlite3: const sqlite3 = require('sqlite3').verbose();
+const compression = require('compression');
 const { Pool } = require('pg'); // Use pg Pool
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
-// Nodemailer is not used if sendResetEmail uses curl, but keep require if needed later
 const nodemailer = require('nodemailer');
 const { exec } = require('child_process'); // Keep for sendResetEmail function
 // Remove axios if not needed elsewhere: const axios = require('axios'); 
@@ -23,6 +22,7 @@ const ALGORITHM = 'aes-256-gcm';
 const KEY_DERIVATION_ITERATIONS = 100000; // Standard iteration count for PBKDF2
 
 // Middleware
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -211,8 +211,17 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
         if (err) {
+            // Provide a more specific message for token expiration
+            if (err.name === 'TokenExpiredError') {
+                console.log("Auth failed: Token expired");
+                return res.status(401).json({ 
+                    message: 'Your session has expired. Please log in again.',
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+            
             console.log("Auth failed: Invalid token", err.message);
-            return res.status(403).json({ message: 'Invalid or expired token' }); // More specific error
+            return res.status(403).json({ message: 'Invalid token' });
         }
         // Add user info from token payload to request object
         req.user = { id: user.id, username: user.username }; // Only include necessary info
@@ -448,19 +457,16 @@ app.post('/login', async (req, res) => {
             return res.status(500).json({ message: 'Failed to access encryption key.' });
         }
 
-        // Store the decrypted key in Redis with expiration (e.g., 1 hour = 3600 seconds)
+        // Store the decrypted key in Redis with expiration (extend this to match JWT)
         try {
             const redisKey = `userKey:${user.id}`;
             await redisClient.set(redisKey, decryptedUserDataKeyHex, {
-                // EX: 3600 // Expires in 1 hour (seconds) - Use same as JWT
-                // You can adjust the expiration time as needed
-                EX: 3600 // Example: 1 hour expiry
+                // Use a much longer expiration time (30 days in seconds)
+                EX: 30 * 24 * 60 * 60 // 30 days expiry
             });
             console.log(`User ${user.id} key decrypted and cached in Redis.`);
         } catch (redisErr) {
             console.error('Redis SET error during login:', redisErr);
-            // Decide how to handle Redis failure - maybe log and proceed without cache?
-            // For this app, failing to cache means notes won't work, so return error
             return res.status(500).json({ message: 'Failed to cache user session key.' });
         }
 
@@ -469,8 +475,12 @@ app.post('/login', async (req, res) => {
              return res.status(500).json({ message: 'Server configuration error' });
         }
 
-        // Create JWT
-        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+        // Create JWT with 30 days expiration instead of 1 hour
+        const token = jwt.sign(
+            { id: user.id, username: user.username }, 
+            SECRET_KEY, 
+            { expiresIn: '30d' } // 30 days instead of '1h'
+        );
         res.json({ token });
 
     } catch (err) {
