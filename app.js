@@ -765,6 +765,9 @@ app.post('/reset-password', async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+app.get('/home', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
 
 // Serve the new reset password page
 app.get('/reset-password', (req, res) => {

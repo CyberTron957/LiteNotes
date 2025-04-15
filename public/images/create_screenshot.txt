@@ -1,0 +1,8 @@
+Please replace this text file with an actual screenshot of your LiteNotes app.
+
+For best results:
+1. Take a screenshot of your app in dark mode showing a note being edited
+2. Save it as app-screenshot.png in this directory
+3. Ideal dimensions are 800x500 px for the homepage layout
+
+Until then, the homepage will display a broken image placeholder. 

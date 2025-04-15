@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteNotes - Minimalist Notes App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Homepage-specific styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 2s ease, color 2s ease;
+        }
+        
+        /* Add transitions to all elements that use CSS variables */
+        * {
+            transition: background-color 2s ease, color 2s ease, border-color 2s ease, box-shadow 2s ease;
+        }
+        
+        .home-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .home-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo span {
+            color: var(--text-secondary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            color: var(--text-primary);
+        }
+        
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex: 1;
+            padding: 2rem 0;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .cta-primary {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            text-decoration: none;
+        }
+        
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        
+        .cta-secondary {
+            color: var(--text-secondary);
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .cta-secondary:hover {
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .feature {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .demo-image {
+            width: 100%;
+            max-width: 800px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 3rem auto;
+            box-shadow: var(--shadow);
+        }
+        
+        .home-footer {
+            margin-top: auto;
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        
+        .theme-switcher:hover {
+            transform: translateY(-2px);
+        }
+        
+        .theme-switcher i {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+        
+        .pattern-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.015;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .home-nav {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .cta-primary, .cta-secondary {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter">
+    <div class="pattern-bg bg-dots"></div>
+    <div class="theme-switcher" id="theme-switcher">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <div class="home-container">
+        <nav class="home-nav">
+            <div class="logo">Lite<span>Notes</span></div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="https://github.com/CyberTron957/litenotes" class="nav-link">GitHub</a>
+            </div>
+        </nav>
+        
+        <section class="hero">
+            <h1 class="hero-title">Minimalist. Secure.<br>Just Notes.</h1>
+            <p class="hero-subtitle">A fast, secure, and minimalist notes application with end-to-end encryption and offline support. Your thoughts stay private, synced, and always available.</p>
+            
+            <div class="cta-buttons">
+                <a href="/app" class="cta-primary">Get Started <i class="fas fa-arrow-right"></i></a>
+                <a href="#features" class="cta-secondary">Learn More</a>
+            </div>
+            
+            <img src="images/app-screenshot.png" alt="LiteNotes App Screenshot" class="demo-image">
+        </section>
+        
+        <section id="features" class="features">
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-lock"></i></div>
+                <h3 class="feature-title">End-to-End Encryption</h3>
+                <p class="feature-desc">Your notes are encrypted using AES-256-GCM before being stored. Only you can decrypt them with your password.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-wifi-slash"></i></div>
+                <h3 class="feature-title">Offline Support</h3>
+                <p class="feature-desc">Create and edit notes even when offline. Changes sync automatically when you reconnect.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-palette"></i></div>
+                <h3 class="feature-title">Customizable UI</h3>
+                <p class="feature-desc">Multiple themes, fonts, and background patterns to match your style and improve readability.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3 class="feature-title">Real-time Saving</h3>
+                <p class="feature-desc">Your notes are automatically saved as you type, with encrypted cloud backup when signed in.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h3 class="feature-title">Mobile Responsive</h3>
+                <p class="feature-desc">Fully optimized for mobile viewing. Take your notes anywhere on any device.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+                <h3 class="feature-title">Cloud Sync & Merge</h3>
+                <p class="feature-desc">Local notes are automatically merged with your cloud notes when you sign in.</p>
+            </div>
+        </section>
+        
+        <footer class="home-footer">
+            <p>© 2025 LiteNotes</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const icon = themeSwitcher.querySelector('i');
+            
+            // Define all available themes in order of rotation
+            const themes = [
+                'dark',
+                'light',
+                'sepia',
+                'slate',
+                'blue',
+                'mono',
+                'mint',
+                'lavender',
+                'warm'
+            ];
+            
+            // Define font options
+            const fonts = [
+                'inter',
+                'mono',
+                'serif',
+                'space'
+            ];
+            
+            let currentThemeIndex = 0;
+            let currentFontIndex = 0;
+            let autoRotate = true; // Set to true by default
+            let isTransitioning = false; // Flag to prevent multiple transitions at once
+            
+            // Initialize with random theme and font
+            currentThemeIndex = Math.floor(Math.random() * themes.length);
+            currentFontIndex = Math.floor(Math.random() * fonts.length);
+            setTheme(themes[currentThemeIndex], fonts[currentFontIndex], false); // No animation for initial theme
+            
+            // Function to set theme and font with smooth transition
+            function setTheme(themeName, fontName, animate = true) {
+                if (isTransitioning) return; // Prevent multiple transitions
+                
+                isTransitioning = animate; // Only set to true if we're animating
+                
+                // Fade out content slightly
+                if (animate) {
+                    document.body.style.opacity = '0.92';
+                }
+                
+                // Slight delay before changing theme class
+                setTimeout(() => {
+                    // Remove all theme classes
+                    themes.forEach(theme => {
+                        document.body.classList.remove(`${theme}-theme`);
+                    });
+                    
+                    // Remove all font classes
+                    fonts.forEach(font => {
+                        document.body.classList.remove(`font-${font}`);
+                    });
+                    
+                    // Add selected theme class
+                    document.body.classList.add(`${themeName}-theme`);
+                    
+                    // Add selected font class
+                    document.body.classList.add(`font-${fontName}`);
+                    
+                    // Update theme icon
+                    updateThemeIcon(themeName);
+                    
+                    // Update current indices
+                    currentThemeIndex = themes.indexOf(themeName);
+                    currentFontIndex = fonts.indexOf(fontName);
+                    
+                    // Fade back in
+                    if (animate) {
+                        setTimeout(() => {
+                            document.body.style.opacity = '1';
+                            
+                            // Allow next transition after fade completes
+                            setTimeout(() => {
+                                isTransitioning = false;
+                            }, 300);
+                        }, 300);
+                    }
+                }, animate ? 300 : 0);
+            }
+            
+            function updateThemeIcon(theme) {
+                // Show sun icon for light themes, moon for dark
+                if (['dark', 'slate', 'mono'].includes(theme)) {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                } else {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                }
+            }
+            
+            // Get random theme (different from current)
+            function getRandomTheme() {
+                // Get all themes except current one
+                const availableThemes = themes.filter((t, i) => i !== currentThemeIndex);
+                // Pick random from remaining themes
+                const randomIndex = Math.floor(Math.random() * availableThemes.length);
+                return availableThemes[randomIndex];
+            }
+            
+            // Theme rotation interval (5 seconds)
+            const rotationInterval = setInterval(() => {
+                if (!autoRotate || isTransitioning) return;
+                
+                // Choose random theme different from current
+                const nextTheme = getRandomTheme();
+                
+                // Keep current font (don't change font with every theme change)
+                setTheme(nextTheme, fonts[currentFontIndex], true);
+            }, 5000);
+            
+            // Toggle auto-rotation on click
+            themeSwitcher.addEventListener('click', function() {
+                autoRotate = !autoRotate;
+                
+                // Visual indicator that auto-rotation is paused
+                if (autoRotate) {
+                    themeSwitcher.style.opacity = '1';
+                } else {
+                    themeSwitcher.style.opacity = '0.7';
+                }
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
