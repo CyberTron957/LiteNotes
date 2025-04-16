@@ -27,7 +27,7 @@ body.light-theme {
 
 /* Sepia theme */
 body.sepia-theme {
-    --bg-primary: #f8f3e9;
+    --bg-primary: #f5eddf;
     --bg-secondary: #ece0cc;
     --text-primary: #382c1d;
     --text-secondary: #6b5f50;
@@ -49,6 +49,47 @@ body.slate-theme {
     --danger: #d8dde2;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     --pattern-color: rgba(216, 221, 226, 0.4); /* Better contrast in slate theme */
+}
+
+/* Midnight theme - dark blue */
+body.midnight-theme {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --hover: #1e293b;
+    --danger: #e2e8f0;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --pattern-color: rgba(226, 232, 240, 0.4);
+}
+
+
+
+/* Forest theme - dark green */
+body.forest-theme {
+    --bg-primary: #0f1f1a;
+    --bg-secondary: #1a2e25;
+    --text-primary: #d9e5e1;
+    --text-secondary: #91ada5;
+    --border: #2b4a3f;
+    --hover: #1f382f;
+    --danger: #d9e5e1;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --pattern-color: rgba(217, 229, 225, 0.4);
+}
+
+/* Monochrome theme - pure black and white */
+body.monochrome-theme {
+    --bg-primary: #000000;
+    --bg-secondary: #121212;
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --border: #333333;
+    --hover: #1a1a1a;
+    --danger: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --pattern-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Minimal Blue theme */
@@ -101,16 +142,16 @@ body.lavender-theme {
     --pattern-color: rgba(60, 45, 98, 0.3); /* Better contrast in lavender theme */
 }
 
-body.warm-theme {
-    --bg-primary: #f9f5f1;
-    --bg-secondary: #f0e9e2;
-    --text-primary: #4a3b30;
-    --text-secondary: #8c7b6d;
-    --border: #e2d5c8;
-    --hover: #e9ded2;
-    --danger: #4a3b30;
-    --shadow: 0 4px 12px rgba(74, 59, 48, 0.1);
-    --pattern-color: rgba(74, 59, 48, 0.3); /* Better contrast in warm theme */
+body.rose-gold-theme {
+    --bg-primary: #fff1f4;
+    --bg-secondary: #ffe4e9;
+    --text-primary: #5c2d37;
+    --text-secondary: #b37a85;
+    --border: #e3b8c1;
+    --hover: #f7d4d9;
+    --danger: #a05262;
+    --shadow: 0 4px 12px rgba(160, 82, 98, 0.15);
+    --pattern-color: rgba(160, 82, 98, 0.25);
 }
 
 /* Font styles */
@@ -310,18 +351,19 @@ body {
 }
 
 .note-editor {
-    padding: 50px 100px;
-    padding-bottom: 30vh;
     width: 100%;
     height: 100%;
     background: transparent;
-    resize: none;
     border: none;
-    outline: none;
-    font-size: 1.1rem;
-    line-height: 1.6;
     color: var(--text-primary);
+    font-size: 1.1rem;
+    line-height: 1.8;
+    resize: none;
+    outline: none;
+    padding: 50px 100px;
+    border-radius: 0;
     overflow-y: auto;
+    padding-bottom: 50vh;
 }
 
 .note-editor:focus {
@@ -1155,7 +1197,7 @@ body {
 }
 .theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
 .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
-.theme-color.warm { background-color: #f9f5f1; border: 1px solid #e2d5c8; }
+.theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
 
 .font-option {
     display: flex;
@@ -1212,12 +1254,6 @@ body {
     opacity: 0.2;
 }
 
-/* Remove gradient background */
-/* .bg-gradient {
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-    opacity: 0.7;
-} */
-
 .bg-scatter {
     background-color: var(--bg-primary);
     background-image: radial-gradient(var(--pattern-color) 1.5px, transparent 1.5px),
@@ -1234,6 +1270,13 @@ body {
     background-size: 40px 40px;
     background-position: 0 0, 0 0;
     opacity: 0.15;
+}
+
+/* Premium background */
+.bg-soft-lines {
+    background-color: var(--bg-primary);
+    background-image: repeating-linear-gradient(0deg, var(--pattern-color), var(--pattern-color) 1px, transparent 1px, transparent 31px);
+    opacity: 0.25;
 }
 
 /* Add background container for note editor */
@@ -1322,6 +1365,12 @@ body {
     background-image: linear-gradient(var(--pattern-color) 0.5px, transparent 0.5px),
                      linear-gradient(90deg, var(--pattern-color) 0.5px, transparent 0.5px);
     background-size: 3px 3px;
+    opacity: 0.9;
+}
+
+/* Premium background preview */
+.background-preview.soft-lines {
+    background-image: repeating-linear-gradient(0deg, var(--pattern-color), var(--pattern-color) 1px, transparent 1px, transparent 3.1px);
     opacity: 0.9;
 }
 
@@ -1551,3 +1600,15 @@ body {
         left: 15px; /* Match mobile padding */
     }
 }
+
+/* Theme color icons */
+.theme-color.light { background-color: #ffffff; border: 1px solid #e0e0e0; }
+.theme-color.sepia { background-color: #f8f3e9; border: 1px solid #d3c4a9; }
+.theme-color.slate { background-color: #1e2125; border: 1px solid #3a3f47; }
+.theme-color.midnight { background-color: #0f172a; border: 1px solid #334155; border-radius: 50%; }
+.theme-color.forest { background-color: #0f1f1a; border: 1px solid #2b4a3f; border-radius: 50%; }
+.theme-color.blue { background-color: #f0f5fa; border: 1px solid #c9d8eb; }
+.theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
+.theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
+.theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
+.theme-color.monochrome { background-color: #000000; border: 1px solid #333333; border-radius: 50%; }

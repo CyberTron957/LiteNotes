@@ -243,6 +243,9 @@ function handleResize() {
 
 // Check auth status and initialize app
 async function initializeApp() {
+    // Create mobile elements
+    createMobileElements();
+    
     // Handle mobile/desktop view on startup first
     handleResize(); 
 
@@ -251,14 +254,20 @@ async function initializeApp() {
     if (savedTheme) {
         // Handle case where saved theme is 'dark' which we've removed
         if (savedTheme === 'dark') {
-            // Use 'mono' as fallback for 'dark'
-            setTheme('mono');
-        } else {
+            // Use 'slate' as fallback for 'dark'
+            setTheme('slate');
+        } 
+        // Handle case where saved theme is 'mono' or 'warm' which we've removed
+        else if (savedTheme === 'mono' || savedTheme === 'warm') {
+            // Use 'rose-gold' as fallback for removed themes
+            setTheme('rose-gold');
+        }
+        else {
             setTheme(savedTheme);
         }
     } else {
         // On first visit with no saved theme, use a random theme
-        const themes = ['light', 'mono', 'sepia', 'slate', 'blue', 'mint', 'lavender', 'warm'];
+        const themes = ['light', 'sepia', 'blue', 'mint', 'lavender', 'rose-gold', 'slate', 'midnight', 'forest', 'monochrome'];
         const randomTheme = themes[Math.floor(Math.random() * themes.length)];
         setTheme(randomTheme);
     }
@@ -1264,8 +1273,20 @@ function toggleThemePalette() {
 
 // Set theme function
 function setTheme(theme) {
-    // Remove all existing theme classes
-    document.body.classList.remove('light-theme', 'sepia-theme', 'slate-theme', 'blue-theme', 'mono-theme', 'mint-theme', 'lavender-theme', 'warm-theme');
+    // Remove all possible theme classes
+    document.body.classList.remove(
+        'light-theme', 
+        'sepia-theme', 
+        'slate-theme', 
+        'midnight-theme', 
+        'charcoal-theme', 
+        'forest-theme', 
+        'blue-theme', 
+        'mint-theme', 
+        'lavender-theme', 
+        'rose-gold-theme',
+        'monochrome-theme'
+    );
     
     // Add appropriate theme class
     if (theme !== 'dark') {
