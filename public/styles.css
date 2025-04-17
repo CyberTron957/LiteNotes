@@ -350,9 +350,25 @@ body {
     padding: 20px 0 0 0;
 }
 
-.note-editor {
+.note-title-input {
     width: 100%;
-    height: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.8em; /* Larger font for title */
+    font-weight: 600;
+    line-height: 1.4;
+    outline: none;
+    padding: 50px 100px 0; /* Match horizontal padding, no bottom padding */
+    margin-bottom: 0.5em; /* Space below title */
+    display: block;
+    box-sizing: border-box;
+}
+
+.note-content-editor { /* Renamed from note-editor for clarity */
+    width: 100%;
+    /* Calculate height to fill remaining space */
+    height: calc(100% - 50px - 1.4em - 0.5em); /* Adjust based on title height/margin */
     background: transparent;
     border: none;
     color: var(--text-primary);
@@ -360,48 +376,51 @@ body {
     line-height: 1.8;
     resize: none;
     outline: none;
-    padding: 50px 100px;
+    /* Adjust padding: No top padding, match horizontal, keep bottom */
+    padding: 0 100px 50vh 100px; 
     border-radius: 0;
     overflow-y: auto;
-    padding-bottom: 50vh;
+    caret-color: var(--text-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    /* position: relative; */ /* Removed, likely not needed now */
 }
 
-.note-editor:focus {
-    background-color: transparent;
-}
-
-/* Custom Scrollbar for WebKit browsers */
-.note-editor::-webkit-scrollbar {
+/* Custom Scrollbar for WebKit browsers (apply to content editor) */
+.note-content-editor::-webkit-scrollbar {
     width: 8px;
 }
 
-.note-editor::-webkit-scrollbar-track {
+.note-content-editor::-webkit-scrollbar-track {
     background: var(--bg-primary);
     border-radius: 4px;
 }
 
-.note-editor::-webkit-scrollbar-thumb {
+.note-content-editor::-webkit-scrollbar-thumb {
     background-color: var(--border);
     border-radius: 4px;
     border: 2px solid var(--bg-primary);
 }
 
-.note-editor::-webkit-scrollbar-thumb:hover {
+.note-content-editor::-webkit-scrollbar-thumb:hover {
     background-color: var(--text-secondary);
 }
 
-/* Style first line (Title) */
-.note-editor::first-line {
-    font-size: 1.8em;
-    font-weight: 600;
-    line-height: 1.4;
-    display: block;
-    margin-bottom: 0.5em;
-}
+/* Mobile Styles Update */
+@media (max-width: 768px) {
+    /* ... existing mobile rules ... */
 
-/* Add padding after the first line break to separate title from content */
-.note-editor:not(:empty) {
-    padding-top: 3.5em; /* Increased top padding to accommodate the title + spacing */
+    /* Adjust mobile title/content padding */
+    .note-title-input {
+        padding: 30px 15px 0;
+        font-size: 1.6em;
+    }
+    
+    .note-content-editor {
+        padding: 0 15px 30vh 15px; 
+        font-size: 16px; 
+        height: calc(100% - 30px - 1.4em - 0.5em); /* Adjust height calc */
+    }
 }
 
 .auth-container {
@@ -883,7 +902,7 @@ body {
         color: var(--bg-primary);
         border-radius: 50%;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        z-index: 990; /* Lowered z-index for buttons */
+        z-index: 1010; /* Above sidebar and overlay */
         border: none;
         display: flex; /* Use flex for centering */
         justify-content: center;
@@ -954,18 +973,16 @@ body {
         border-radius: 15px 15px 0 0;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         padding: 20px;
-        z-index: 1000; /* Base z-index for inactive popup */
+        z-index: 1100; /* Above toggle */
         background-color: var(--bg-secondary);
-        transform: translateY(100%); 
-        transition: transform 0.3s ease, z-index 0s linear 0.3s; /* Delay z-index change */
-        display: block; 
-        animation: none; 
+        transform: translateY(100%); /* Initially hidden */
+        transition: transform 0.3s ease;
+        display: block; /* Ensure it's display block */
+        animation: none; /* Remove fadeIn animation */
     }
 
     .theme-palette.active {
-         transform: translateY(0);
-         z-index: 2000; /* High z-index for active popup */
-         transition: transform 0.3s ease, z-index 0s linear 0s; /* Apply z-index immediately */
+         transform: translateY(0); /* Slide up */
     }
 
     .theme-palette::before {
@@ -979,7 +996,7 @@ body {
     }
 
     /* Optimize note editor for mobile */
-    .note-editor {
+    .note-content-editor {
         padding: 30px 30px; /* Reduce left/right padding specifically for mobile */
         padding-bottom: 30vh; /* Adjust bottom padding for mobile */
         
@@ -1006,10 +1023,10 @@ body {
 
     /* Theme toggle button fixed positioning on mobile */
     .theme-toggle {
-        position: fixed; 
+        position: fixed; /* Keep fixed */
         left: 20px;
         bottom: 20px;
-        z-index: 990; /* Lowered z-index for buttons */
+        z-index: 1010;
         /* Hide by default on mobile */
         opacity: 0;
         visibility: hidden;
@@ -1019,10 +1036,10 @@ body {
 
     /* Info toggle styling fixed on mobile */
     .info-toggle { 
-        position: fixed; 
+        position: fixed; /* Keep fixed */
         left: 70px; 
         bottom: 20px;
-        z-index: 990; /* Lowered z-index for buttons */
+        z-index: 1;
         /* Hide by default on mobile */
         opacity: 0;
         visibility: hidden;
@@ -1045,39 +1062,42 @@ body {
         bottom: 65px;
         /* ... rest of info-popup mobile styles ... */
         z-index: 1000; /* Base z-index for inactive popup */
+        /* Simplify transition */
+        transition: opacity 0.2s ease; /* Assuming info fades */
+        display: none; /* Still hide when inactive */
     }
 
     .info-popup.active {
+         display: block;
          z-index: 2000; /* High z-index when active */
+         /* Remove transition override */
+         /* animation: fadeIn 0.2s ease-out; */ /* Re-enable animation if desired */
+         opacity: 1; /* Ensure visible */
     }
 
-    /* Theme Palette mobile positioning (Keep bottom sheet style) */
+    /* Theme Palette mobile positioning (keep bottom sheet style) */
     .theme-palette {
         position: fixed;
         /* ... rest of theme-palette mobile styles ... */
+        z-index: 1000; /* Base z-index for inactive popup */
+        background-color: var(--bg-secondary);
+        transform: translateY(100%); 
+        /* Simplify transition */
+        transition: transform 0.3s ease;
+        display: block; 
+        animation: none; 
     }
 
-    /* Remove the specific rule added previously to fix overlap, 
-       as hiding buttons when sidebar is closed now handles this */
-    /*
-    .theme-palette.active ~ .sidebar-toggle,
-    body:has(.theme-palette.active) .sidebar-toggle {
-        bottom: 20px; 
-        opacity: 0.5; 
+    .theme-palette.active {
+          transform: translateY(0);
+          z-index: 2000; /* High z-index for active popup */
+          /* Remove transition override, inherit from base */
+          /* transition: transform 0.3s ease, z-index 0s linear 0s; */
     }
-    */
 
     /* ... rest of mobile rules ... */
 }
 
-/* Reset conflicting absolute positioning from desktop styles */
-.theme-palette {
-    /* Remove absolute positioning if present in default styles */
-    /* position: absolute; */ 
-    /* left: 70px; */
-    /* bottom: 20px; */
-    /* ... other default styles ... */
-}
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 500px) {
@@ -1150,7 +1170,7 @@ body {
         position: fixed;
         left: 70px; 
         bottom: 20px;
-        z-index: 990; /* Lowered z-index for buttons */
+        z-index: 1010;
     }
 
     /* ... rest of mobile rules ... */
@@ -1235,12 +1255,12 @@ body {
 }
 
 /* Font-specific adjustments */
-.font-mono .note-editor, .font-space .note-editor {
+.font-mono .note-content-editor, .font-space .note-content-editor {
     font-size: calc(1.1rem * var(--font-size-adjust, 1));
     line-height: 1.7;
 }
 
-.font-serif .note-editor {
+.font-serif .note-content-editor {
     font-size: calc(1.1rem * var(--font-size-adjust, 1));
     line-height: 1.8;
 }
@@ -1259,8 +1279,9 @@ body {
 
 /* Adjust width of theme palette to accommodate the columns */
 .theme-palette {
-    width: 450px;
+    width: 470px;
     max-width: 90vw;
+    margin-bottom: 20px;
 }
 
 /* Responsive adjustments */
@@ -1296,6 +1317,11 @@ body {
 .theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
 .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
 .theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
+.theme-color.monochrome { 
+    background-color: #000000; 
+    border: 1px solid var(--text-primary); /* Use text color for better contrast */
+    border-radius: 50%;
+}
 
 .font-option {
     display: flex;
@@ -1389,7 +1415,7 @@ body {
 }
 
 /* Ensure note editor sits above background */
-.note-editor {
+.note-content-editor {
     position: relative;
     z-index: 1;
     background: transparent;
@@ -1652,18 +1678,18 @@ body {
     padding-bottom: 50vh; /* Same bottom padding */
     white-space: pre-wrap; /* Preserve line breaks and spaces */
     word-wrap: break-word;
+    caret-color: var(--text-primary);
+    position: relative;
 }
 
 /* Placeholder styling using ::before pseudo-element */
 .note-editor[contenteditable="true"]:empty::before {
-    content: attr(data-placeholder);
+    content: "Start typing...";
     color: var(--text-secondary);
-    opacity: 0.6;
     position: absolute;
     top: 50px; /* Match padding */
     left: 100px; /* Match padding */
     pointer-events: none;
-    font-style: italic;
 }
 
 /* Note Editor Scrollbar Styles (copied from previous textarea) */
@@ -1709,7 +1735,7 @@ body {
 .theme-color.mint { background-color: #f2f7f5; border: 1px solid #cbe3d9; }
 .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
 .theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
-.theme-color.monochrome { background-color: #000000; border: 1px solid #333333; border-radius: 50%; }
+.theme-color.mono { background-color: #000000; border: 1px solid #333333; border-radius: 50%; }
 
 /* Info Toggle Button */
 .info-toggle {
@@ -1742,7 +1768,7 @@ body {
 
 /* Info Popup */
 .info-popup {
-    position: absolute; /* Position relative to its parent container (or fixed if preferred) */
+    position: fixed; /* Position relative to its parent container (or fixed if preferred) */
     left: 70px; /* Align with info toggle button */
     bottom: 65px; /* Position above the info toggle button */
     background-color: var(--bg-secondary);
@@ -1754,12 +1780,17 @@ body {
     box-shadow: var(--shadow);
     width: auto; /* Adjust width based on content */
     min-width: 100px;
+    z-index: 1000; /* Base z-index for inactive popup */
+    /* Simplify transition */
+    transition: opacity 0.2s ease; /* Assuming info fades */
 }
 
 .info-popup.active {
     display: block;
-    animation: fadeIn 0.2s ease-out;
-    z-index: 1150; /* Above buttons when open */
+    z-index: 2000; /* High z-index when active */
+    /* Remove transition override */
+    /* animation: fadeIn 0.2s ease-out; */ /* Re-enable animation if desired */
+    opacity: 1; /* Ensure visible */
 }
 
 .info-link {

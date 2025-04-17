@@ -772,59 +772,96 @@ function selectNote(noteId) {
 
 // Render the note editor
 function renderNoteView(note) {
-    const created = new Date(note.created_at);
-    const formattedDate = created.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long', 
-        day: 'numeric'
-    });
-    
-    // Combine title and content for the textarea
-    const combinedContent = `${note.title || ''}\n${note.content || ''}`;
+    // Store scroll position of the content area before clearing
+    const contentArea = document.getElementById('note-content');
+    const oldScrollTop = contentArea ? contentArea.scrollTop : 0;
 
-    noteView.innerHTML = `
-        <div class="note-background bg-${currentBackground}"></div>
-        <div class="note-content">
-            <textarea 
-                class="note-editor" 
-                id="note-content" 
-                placeholder="Start typing... Title is the first line."
-                spellcheck="false" 
-                autocorrect="off" 
-                autocapitalize="off"
-            >${combinedContent}</textarea>
+    // Clear previous content
+    noteView.innerHTML = '';
+
+    const backgroundDiv = document.createElement('div');
+    backgroundDiv.className = `note-background bg-${currentBackground}`;
+
+    // Create Title Input
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.className = 'note-title-input';
+    titleInput.id = 'note-title';
+    titleInput.placeholder = 'Note Title';
+    titleInput.value = note.title || '';
+    titleInput.spellcheck = false;
+    titleInput.setAttribute('autocorrect', 'off');
+    titleInput.setAttribute('autocapitalize', 'off');
+
+    // Create Content Textarea
+    const contentTextarea = document.createElement('textarea');
+    contentTextarea.className = 'note-content-editor'; // Use the new class
+    contentTextarea.id = 'note-content';
+    contentTextarea.placeholder = 'Start typing...';
+    contentTextarea.value = note.content || '';
+    contentTextarea.spellcheck = false;
+    contentTextarea.setAttribute('autocorrect', 'off');
+    contentTextarea.setAttribute('autocapitalize', 'off');
+
+    // Action buttons and status dot (remain the same structure)
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'note-actions';
+    actionsDiv.innerHTML = `
+        <div class="delete-note" id="delete-note-btn" title="Delete note">
+             <i class="fas fa-trash"></i>
         </div>
-        <!-- Action buttons and status dot positioned absolutely/fixed -->
-        <div class="note-actions">
-            <div class="delete-note" id="delete-note-btn" title="Delete note">
-                 <i class="fas fa-trash"></i>
-            </div>
-        </div>
-        <div id="save-status-dot" class="save-status-dot"></div>
     `;
-    
-    // Get elements after setting innerHTML
-    const contentInput = document.getElementById('note-content');
+
+    const statusDotDiv = document.createElement('div');
+    statusDotDiv.id = 'save-status-dot';
+    statusDotDiv.className = 'save-status-dot';
+
+    // Append elements to noteView
+    noteView.appendChild(backgroundDiv);
+    noteView.appendChild(titleInput);
+    noteView.appendChild(contentTextarea);
+    noteView.appendChild(actionsDiv);
+    noteView.appendChild(statusDotDiv);
+
+    // Re-select elements after adding them
+    const newTitleInput = document.getElementById('note-title');
+    const newContentArea = document.getElementById('note-content');
     const deleteNoteBtn = document.getElementById('delete-note-btn');
-    const saveStatusDot = document.getElementById('save-status-dot');
+    const newStatusDot = document.getElementById('save-status-dot');
 
-    // Add standard event listeners
-    contentInput.addEventListener('input', () => scheduleNoteSave(saveStatusDot));
-    deleteNoteBtn.addEventListener('click', () => {
-        showDeleteConfirmation(note.id, deleteNoteBtn);
-    });
+    // Add event listeners
+    const saveHandler = () => scheduleNoteSave(newStatusDot);
+    if (newTitleInput) {
+        newTitleInput.addEventListener('input', saveHandler);
+        // Add keydown listener to title input
+        newTitleInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default Enter behavior (like form submission if applicable)
+                const contentEditor = document.getElementById('note-content');
+                if (contentEditor) {
+                    contentEditor.focus(); // Move focus to the content textarea
+                }
+            }
+        });
+    }
+    if (newContentArea) {
+        newContentArea.addEventListener('input', saveHandler);
+        // Re-attach bullet point helper if desired (or keep removed)
+        newContentArea.addEventListener('keydown', handleNoteEditorKeyDown);
+    }
+    if (deleteNoteBtn) {
+        deleteNoteBtn.addEventListener('click', () => {
+            showDeleteConfirmation(note.id, deleteNoteBtn);
+        });
+    }
 
-    // ---- Add Keydown Listener for Bullet Points ----
-    contentInput.addEventListener('keydown', handleNoteEditorKeyDown);
-    // ----------------------------------------------
-    
-    // Restore scroll position
-    const savedScrollPosition = getScrollPosition(note.id);
-    if (contentInput && savedScrollPosition > 0) {
-        // Use setTimeout to ensure content is rendered before setting scroll
+    // Restore scroll position for the content area
+    if (newContentArea && oldScrollTop > 0) {
         setTimeout(() => {
-            contentInput.scrollTop = savedScrollPosition;
+            newContentArea.scrollTop = oldScrollTop;
         }, 0);
+    } else if (newContentArea) {
+        newContentArea.scrollTop = 0;
     }
 }
 
@@ -1002,59 +1039,57 @@ function getScrollPosition(noteId) {
 // Save the current note
 async function saveCurrentNote() {
     if (!currentNoteId) return;
-    
-    const contentInput = document.getElementById('note-content');
-    const saveStatusDot = document.getElementById('save-status-dot'); 
-    
-    if (!contentInput || !saveStatusDot) return;
-    
-    // Extract title and content from textarea
-    const fullText = contentInput.value;
-    const newlineIndex = fullText.indexOf('\n');
-    let title = '';
-    let content = '';
 
-    if (newlineIndex === -1) {
-        // No newline, entire text is title
-        title = fullText;
-    } else {
-        title = fullText.substring(0, newlineIndex);
-        content = fullText.substring(newlineIndex + 1);
-    }
+    const titleInput = document.getElementById('note-title');
+    const contentTextarea = document.getElementById('note-content');
+    const saveStatusDot = document.getElementById('save-status-dot');
 
-    title = title.trim(); // Trim whitespace from title
-    // Use the title as-is, even if empty - no automatic "Untitled" replacement
-    // const finalTitle = title === '' ? 'Untitled' : title;
+    if (!titleInput || !contentTextarea || !saveStatusDot) return;
+
+    // --- Get title and content from separate fields --- 
+    const title = titleInput.value; // Title is directly from input
+    const content = contentTextarea.value; // Content is directly from textarea
+    // ---------------------------------------------------
 
     // Update local array first for responsiveness
     const noteIndex = notes.findIndex(note => note.id === currentNoteId);
     if (noteIndex !== -1) {
-        notes[noteIndex].title = title; // Use the exact title without defaulting
+        notes[noteIndex].title = title;
         notes[noteIndex].content = content;
-        notes[noteIndex].updated_at = new Date().toISOString(); // Update timestamp
+        notes[noteIndex].updated_at = new Date().toISOString();
+
+        // Update title in sidebar (check if it changed)
+        const noteItem = notesList.querySelector(`.note-item[data-note-id="${currentNoteId}"]`);
+        if (noteItem && noteItem.textContent !== (title || 'Untitled')) {
+            noteItem.textContent = title || 'Untitled';
+        }
         
-        // Re-sort the notes array after updating
+        // Re-sort the notes array after updating (only if necessary - title doesn't affect sort)
+        // Sorting primarily relies on updated_at, which always changes
         notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        
-        renderNotesList(); // Update title/order in sidebar immediately
+        renderNotesList(); // Render list to reflect potential order change
+
     }
 
     if (currentToken && !isOffline) {
         // Logged in and online: Save to server
         try {
+            // Abort previous fetch if exists
+            if (saveAbortController) saveAbortController.abort();
+            saveAbortController = new AbortController();
+            
             const response = await fetch(`/notes/${currentNoteId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ title: title, content }),
-                signal: saveAbortController?.signal // Pass the abort signal - Added
+                body: JSON.stringify({ title: title, content: content }), // Send separate title/content
+                signal: saveAbortController.signal 
             });
-            
-            // Reset controller only after successful completion or non-abort error
-            saveAbortController = null; // Added reset here
-            
+
+            saveAbortController = null;
+
             if (!response.ok) {
                 if (response.status === 0) {
                     // Network error - likely offline
@@ -1065,20 +1100,16 @@ async function saveCurrentNote() {
                 throw new Error('Failed to save note to server');
             }
             } else {
-            // Update save indicator dot to green (saved)
-            saveStatusDot.classList.remove('saving', 'error');
-            saveStatusDot.classList.add('saved', 'visible');
+                saveStatusDot.classList.remove('saving', 'error');
+                saveStatusDot.classList.add('saved', 'visible');
             }
 
-            // Set timeout to hide the dot after a delay
             clearTimeout(statusDotFadeTimeout);
-            statusDotFadeTimeout = setTimeout(() => {
-                saveStatusDot.classList.remove('visible');
-            }, 2000); // Hide after 2 seconds
+            statusDotFadeTimeout = setTimeout(() => { saveStatusDot.classList.remove('visible'); }, 2000);
 
-            // Save scroll position after successful server save
-            if (contentInput) {
-                saveScrollPosition(currentNoteId, contentInput.scrollTop);
+            // Save scroll position of content area
+            if (contentTextarea) {
+                saveScrollPosition(currentNoteId, contentTextarea.scrollTop);
             }
 
         } catch (error) {
@@ -1110,22 +1141,14 @@ async function saveCurrentNote() {
     } else {
         // Not logged in or offline: Save locally
         saveLocalNotes();
-        // Update dot to indicate local save (green)
         saveStatusDot.classList.remove('saving', 'error');
         saveStatusDot.classList.add('saved', 'visible');
-        
-        // Set timeout to hide the dot after a delay
         clearTimeout(statusDotFadeTimeout);
-        statusDotFadeTimeout = setTimeout(() => {
-            saveStatusDot.classList.remove('visible');
-        }, 2000); 
-        
-        //console.log("Note saved locally");
-         // Save scroll position after successful local save
-        if (contentInput) {
-            saveScrollPosition(currentNoteId, contentInput.scrollTop);
+        statusDotFadeTimeout = setTimeout(() => { saveStatusDot.classList.remove('visible'); }, 2000);
+        if (contentTextarea) {
+            saveScrollPosition(currentNoteId, contentTextarea.scrollTop);
         }
-        saveAbortController = null; // Reset controller even for local save
+        saveAbortController = null;
     }
 }
 
@@ -1564,35 +1587,33 @@ function initializeSocket() {
         socket.on('note_updated', (updatedNote) => {
             console.log('Received note_updated event:', updatedNote);
 
-             // Find the note in the local array
              const noteIndex = notes.findIndex(note => note.id === updatedNote.id);
 
              let needsListRender = false;
              let needsViewRender = false;
+             let titleChanged = false;
+             let contentChanged = false;
 
              if (noteIndex !== -1) {
-                 // Check if timestamp is newer to avoid race conditions (optional but good)
                  if (new Date(updatedNote.updated_at) > new Date(notes[noteIndex].updated_at)) {
                      console.log(`Updating local note ${updatedNote.id}`);
-                     // Update local data
                      const oldTitle = notes[noteIndex].title;
+                     const oldContent = notes[noteIndex].content;
+                     
+                     // Update local data
                      notes[noteIndex].title = updatedNote.title;
                      notes[noteIndex].content = updatedNote.content;
-                     notes[noteIndex].updated_at = updatedNote.updated_at; // Update timestamp
+                     notes[noteIndex].updated_at = updatedNote.updated_at;
 
-                     // Mark for UI updates
-                     if (oldTitle !== updatedNote.title) {
-                          needsListRender = true; // Title changed, update list
-                     }
+                     titleChanged = oldTitle !== updatedNote.title;
+                     contentChanged = oldContent !== updatedNote.content;
 
-                     // If this is the currently viewed note, update the editor
-                     if (currentNoteId === updatedNote.id) {
-                         needsViewRender = true; // Content likely changed
-                     }
+                     if (titleChanged) { needsListRender = true; }
+                     if (currentNoteId === updatedNote.id) { needsViewRender = true; }
 
-                     // Re-sort notes based on the new timestamp
+                     // Re-sort and mark for list render if order might change
                      notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-                     needsListRender = true; // Order might have changed
+                     needsListRender = true;
 
                  } else {
                       console.log(`Ignoring stale update for note ${updatedNote.id}`);
@@ -1604,30 +1625,30 @@ function initializeSocket() {
                  console.log(`Received update for unknown note ID ${updatedNote.id}`);
              }
 
-             // Apply UI updates if needed
-             if (needsListRender) {
-                  renderNotesList(); // Update sidebar titles/order
-             }
+             if (needsListRender) { renderNotesList(); }
+             
              if (needsViewRender) {
-                 // Re-render the currently viewed note
-                 const noteContentView = document.getElementById('note-content');
-                 if (noteContentView) {
-                     // Preserve cursor/scroll position if possible (basic example)
-                     const selectionStart = noteContentView.selectionStart;
-                     const selectionEnd = noteContentView.selectionEnd;
-                     const scrollTop = noteContentView.scrollTop;
+                 // --- Update separate title and content fields --- 
+                 const titleInput = document.getElementById('note-title');
+                 const contentTextarea = document.getElementById('note-content');
 
-                     // Update the textarea content (title + content)
-                     const combinedContent = `${updatedNote.title || ''}\n${updatedNote.content || ''}`;
-                     noteContentView.value = combinedContent;
-
-                     // Restore cursor/scroll (might need adjustment)
-                     noteContentView.selectionStart = selectionStart;
-                     noteContentView.selectionEnd = selectionEnd;
-                     noteContentView.scrollTop = scrollTop;
-                 } else {
-                      // Fallback: re-render the whole view (loses cursor)
-                      renderNoteView(notes[noteIndex]);
+                 if (titleInput && titleChanged) { 
+                     // Only update if focused element isn't this input
+                     if (document.activeElement !== titleInput) {
+                        titleInput.value = updatedNote.title || '';
+                     } else {
+                         console.log('Skipping title update as it is focused.');
+                     }
+                 }
+                 if (contentTextarea && contentChanged) {
+                     // Only update if focused element isn't this textarea
+                     if (document.activeElement !== contentTextarea) {
+                        const scrollTop = contentTextarea.scrollTop; // Preserve scroll
+                        contentTextarea.value = updatedNote.content || '';
+                        contentTextarea.scrollTop = scrollTop; // Restore scroll
+                     } else {
+                         console.log('Skipping content update as it is focused.');
+                     }
                  }
              }
         });
