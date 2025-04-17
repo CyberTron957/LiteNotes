@@ -29,8 +29,6 @@ const themePalette = document.getElementById('theme-palette');
 const themeOptions = document.querySelectorAll('.theme-option');
 const fontOptions = document.querySelectorAll('.font-option');
 const backgroundOptions = document.querySelectorAll('.background-option');
-const infoToggle = document.getElementById('info-toggle');
-const infoPopup = document.getElementById('info-popup');
 
 // Global variables
 let currentUser = null;
@@ -47,7 +45,6 @@ let currentBackground = 'none'; // Default background
 let socket = null;
 let isOffline = !navigator.onLine; // Track online/offline status
 let saveAbortController = null; // Added for AbortController
-let isInfoPopupOpen = false; // Added global for info popup state
 
 // Wrap DOM-dependent code in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -64,11 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const forgotPasswordButton = document.getElementById('forgot-password-button');
     const showLoginFromForgot = document.getElementById('show-login-from-forgot');
     const themeToggle = document.getElementById('theme-toggle');
-    const infoToggle = document.getElementById('info-toggle'); // Now safely accessed
     const createNoteBtn = document.getElementById('create-note-btn');
     const authModal = document.getElementById('auth-modal');
     const themePalette = document.getElementById('theme-palette');
-    const infoPopup = document.getElementById('info-popup');
     const themeOptions = document.querySelectorAll('.theme-option');
     const fontOptions = document.querySelectorAll('.font-option');
     const backgroundOptions = document.querySelectorAll('.background-option');
@@ -88,60 +83,54 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => { /* ... */ });
     if (authModal) authModal.addEventListener('click', (event) => { /* ... */ });
     if (themeToggle) themeToggle.addEventListener('click', toggleThemePalette);
-    if (infoToggle) infoToggle.addEventListener('click', toggleInfoPopup);
 
     if (themeOptions) {
-        themeOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const theme = this.getAttribute('data-theme');
+themeOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        const theme = this.getAttribute('data-theme');
                 if (!theme) {
                     console.error('Theme name is missing from data-theme attribute!');
                     return;
                 }
-                setTheme(theme);
-            });
-        });
+        setTheme(theme);
+    });
+});
     }
 
     if (fontOptions) {
-        fontOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const font = this.getAttribute('data-font');
+fontOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        const font = this.getAttribute('data-font');
                 if (!font) {
                     console.error('Font name is missing from data-font attribute!');
                     return;
                 }
-                setFont(font);
-            });
-        });
+        setFont(font);
+    });
+});
     }
 
     if (backgroundOptions) {
-        backgroundOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const background = this.getAttribute('data-background');
+backgroundOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        const background = this.getAttribute('data-background');
                 if (typeof background === 'undefined' || background === null) {
                     console.error('Background name is missing from data-background attribute!');
                     return;
                 }
-                setBackground(background);
-            });
-        });
+        setBackground(background);
+    });
+});
     }
 
     // Close theme palette or info popup when clicking outside
     document.addEventListener('click', function(event) {
         // Safely reference themePalette and infoPopup now
         const currentThemePalette = document.getElementById('theme-palette');
-        const currentInfoPopup = document.getElementById('info-popup');
         const currentThemeToggle = document.getElementById('theme-toggle');
-        const currentInfoToggle = document.getElementById('info-toggle');
 
         if (isPaletteOpen && currentThemePalette && !currentThemePalette.contains(event.target) && event.target !== currentThemeToggle) {
             toggleThemePalette();
-        }
-        if (isInfoPopupOpen && currentInfoPopup && !currentInfoPopup.contains(event.target) && event.target !== currentInfoToggle) {
-            toggleInfoPopup();
         }
     });
 
@@ -205,9 +194,6 @@ function toggleSidebar() {
         // Close popups when sidebar state changes on desktop
         if (isPaletteOpen) {
             toggleThemePalette();
-        }
-        if (isInfoPopupOpen) {
-            toggleInfoPopup();
         }
     }
 }
@@ -322,7 +308,7 @@ async function initializeApp() {
     }
 
     // Ensure app container is visible AFTER potentially loading notes
-    appContainer.style.display = 'flex';
+    appContainer.style.display = 'flex'; 
     // Force a style recalculation maybe?
     window.getComputedStyle(appContainer).display;
     // Remove temporary mobile init class after display
@@ -556,7 +542,7 @@ async function register() {
 
 // Fetch all notes (from server)
 async function fetchNotes() {
-    if (!currentToken) return null;
+    if (!currentToken) return null; 
     
     // If offline, don't attempt to fetch from server
     if (isOffline) {
@@ -701,7 +687,7 @@ function renderNoteView(note) {
     // ---- Add Keydown Listener for Bullet Points ----
     contentInput.addEventListener('keydown', handleNoteEditorKeyDown);
     // ----------------------------------------------
-
+    
     // Restore scroll position
     const savedScrollPosition = getScrollPosition(note.id);
     if (contentInput && savedScrollPosition > 0) {
@@ -783,7 +769,7 @@ async function createNewNote() {
                     createLocalNote();
                     return;
                 } else {
-                    throw new Error('Failed to create note on server');
+                throw new Error('Failed to create note on server');
                 }
             }
             
@@ -809,7 +795,7 @@ async function createNewNote() {
                 // Fall back to local note creation
                 createLocalNote();
             } else {
-                showToast(error.message, 'error');
+            showToast(error.message, 'error');
             }
         }
     } else {
@@ -820,18 +806,18 @@ async function createNewNote() {
 
 // Helper function to create a local note
 function createLocalNote() {
-    const newNote = {
-        id: `local-${Date.now()}`, 
+        const newNote = {
+            id: `local-${Date.now()}`, 
         title: '',
-        content: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString() // Add updated_at
-    };
-    notes.unshift(newNote);
-    // No need to sort here
-    saveLocalNotes(); // Save to local storage
-    renderNotesList();
-    selectNote(newNote.id);
+            content: '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString() // Add updated_at
+        };
+        notes.unshift(newNote);
+        // No need to sort here
+        saveLocalNotes(); // Save to local storage
+        renderNotesList();
+        selectNote(newNote.id);
 }
 
 // Schedule a note save (debounce)
@@ -842,7 +828,7 @@ function scheduleNoteSave(saveStatusDot) { // Pass the dot element
         saveStatusDot.classList.remove('saved', 'error');
         saveStatusDot.classList.add('saving', 'visible');
     }
-
+    
     // Clear existing timeout
     if (saveTimeout) {
         clearTimeout(saveTimeout);
@@ -856,7 +842,7 @@ function scheduleNoteSave(saveStatusDot) { // Pass the dot element
     // Create a new controller for the upcoming save
     saveAbortController = new AbortController();
     // -------------------------------------------
-
+    
     // Schedule new save
     saveTimeout = setTimeout(() => {
         saveCurrentNote();
@@ -938,7 +924,7 @@ async function saveCurrentNote() {
             
             // Reset controller only after successful completion or non-abort error
             saveAbortController = null; // Added reset here
-
+            
             if (!response.ok) {
                 if (response.status === 0) {
                     // Network error - likely offline
@@ -946,14 +932,14 @@ async function saveCurrentNote() {
                     showToast('Network unavailable. Working in offline mode.', 'info');
                     saveLocalNotes(); // Save locally as fallback
                 } else {
-                    throw new Error('Failed to save note to server');
-                }
-            } else {
-                // Update save indicator dot to green (saved)
-                saveStatusDot.classList.remove('saving', 'error');
-                saveStatusDot.classList.add('saved', 'visible');
+                throw new Error('Failed to save note to server');
             }
-            
+            } else {
+            // Update save indicator dot to green (saved)
+            saveStatusDot.classList.remove('saving', 'error');
+            saveStatusDot.classList.add('saved', 'visible');
+            }
+
             // Set timeout to hide the dot after a delay
             clearTimeout(statusDotFadeTimeout);
             statusDotFadeTimeout = setTimeout(() => {
@@ -984,10 +970,10 @@ async function saveCurrentNote() {
                 saveStatusDot.classList.add('saved', 'visible');
                 saveAbortController = null; // Reset controller on other errors too
             } else {
-                showToast(error.message, 'error');
-                // Indicate error with red dot
-                saveStatusDot.classList.remove('saving', 'saved');
-                saveStatusDot.classList.add('error', 'visible');
+            showToast(error.message, 'error');
+            // Indicate error with red dot
+            saveStatusDot.classList.remove('saving', 'saved');
+            saveStatusDot.classList.add('error', 'visible');
                 saveAbortController = null; // Reset controller on other errors too
             }
         }
@@ -1043,7 +1029,7 @@ async function deleteNote(noteId) {
                     showToast('Network unavailable. Deleted note locally only.', 'info');
                     // Continue with local deletion
                 } else {
-                    throw new Error('Failed to delete note from server');
+                throw new Error('Failed to delete note from server');
                 }
             }
             
@@ -1055,7 +1041,7 @@ async function deleteNote(noteId) {
                 showToast('Network unavailable. Deleted note locally only.', 'info');
                 // Continue with local deletion
             } else {
-                showToast(error.message, 'error');
+            showToast(error.message, 'error');
                 return; // Stop if server delete failed for a reason other than network
             }
         }
@@ -1249,11 +1235,6 @@ async function requestPasswordReset() {
 
 // Toggle theme palette
 function toggleThemePalette() {
-    // Close info popup if it's open
-    if (isInfoPopupOpen) {
-        toggleInfoPopup(); 
-    }
-    
     isPaletteOpen = !isPaletteOpen;
     if (isPaletteOpen) {
         themePalette.classList.add('active');
@@ -1290,21 +1271,6 @@ function toggleThemePalette() {
         if (backdrop) {
             backdrop.remove();
         }
-    }
-}
-
-// Toggle info popup
-function toggleInfoPopup() {
-    // Close theme palette if it's open
-    if (isPaletteOpen) {
-        toggleThemePalette();
-    }
-    
-    isInfoPopupOpen = !isInfoPopupOpen;
-    if (isInfoPopupOpen) {
-        infoPopup.classList.add('active');
-    } else {
-        infoPopup.classList.remove('active');
     }
 }
 

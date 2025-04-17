@@ -638,7 +638,7 @@ body {
 }
 
 .theme-toggle {
-    position: absolute;
+    position: fixed; /* Fixed position relative to viewport */
     left: 20px;
     bottom: 20px;
     background: var(--bg-secondary);
@@ -649,10 +649,9 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1010; /* Ensure visibility */
     transition: all 0.3s;
     border: 1px solid var(--border);
-    margin-right: 10px;
 }
 
 .theme-toggle i {
@@ -666,10 +665,13 @@ body {
     transform: translateY(-2px);
 }
 
+/* Adjust position slightly on desktop when sidebar is hidden */
 .container.sidebar-hidden .theme-toggle {
-    left: 64px;
-    opacity: 0;
-    visibility: hidden;
+    /* Move left when sidebar is collapsed on desktop */
+    /* This might need adjustment based on exact layout */
+    /* left: 15px; */ 
+    /* Or keep it fixed at 20px */
+     left: 20px;
 }
 
 .container.sidebar-hidden .sidebar {
@@ -997,6 +999,46 @@ body {
         z-index: 10; /* Ensure it's above editor */
         height: 36px; /* Give it a defined height */
     }
+
+    /* Theme toggle button fixed positioning on mobile */
+    .theme-toggle {
+        position: fixed; 
+        left: 20px;
+        bottom: 20px;
+        z-index: 1010; 
+        /* Default state on mobile: hidden */
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    /* Show theme toggle ONLY when sidebar is visible on mobile */
+    body.sidebar-visible .theme-toggle {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* Info toggle styling (adjust similarly if kept) */
+    .info-toggle { 
+        position: fixed;
+        left: 70px; 
+        bottom: 20px;
+        z-index: 1010;
+        /* Default hidden on mobile */
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    body.sidebar-visible .info-toggle {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* ... rest of mobile rules ... */
 }
 
 /* Reset conflicting absolute positioning from desktop styles */
@@ -1024,7 +1066,7 @@ body {
 
 /* Theme Toggle and Selector */
 .theme-toggle {
-    position: absolute;
+    position: fixed; /* Fixed position relative to viewport */
     left: 20px;
     bottom: 20px;
     background: var(--bg-secondary);
@@ -1035,10 +1077,9 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1010; /* Ensure visibility */
     transition: all 0.3s;
     border: 1px solid var(--border);
-    margin-right: 10px;
 }
 
 .theme-toggle i {
@@ -1052,10 +1093,38 @@ body {
     transform: translateY(-2px);
 }
 
+/* Adjust position slightly on desktop when sidebar is hidden */
 .container.sidebar-hidden .theme-toggle {
-    left: 64px;
-    opacity: 0;
-    visibility: hidden;
+    /* Move left when sidebar is collapsed on desktop */
+    /* This might need adjustment based on exact layout */
+    /* left: 15px; */ 
+    /* Or keep it fixed at 20px */
+     left: 20px;
+}
+
+/* Remove mobile-specific position override */
+@media (max-width: 768px) {
+    /* ... existing mobile rules ... */
+
+    /* Theme toggle button fixed positioning on mobile */
+    /* REMOVE the position: fixed rule from here, it's now the default */
+    /* .theme-toggle {
+        position: fixed !important; 
+        left: 20px;
+        bottom: 20px;
+        z-index: 1010; 
+    } */
+
+    /* Info toggle styling (remove or adjust if kept) */
+    .info-toggle { 
+        /* display: none; */
+        position: fixed;
+        left: 70px; 
+        bottom: 20px;
+        z-index: 1010;
+    }
+
+    /* ... rest of mobile rules ... */
 }
 
 .theme-palette {
