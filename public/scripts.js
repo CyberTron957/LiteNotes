@@ -29,6 +29,8 @@ const themePalette = document.getElementById('theme-palette');
 const themeOptions = document.querySelectorAll('.theme-option');
 const fontOptions = document.querySelectorAll('.font-option');
 const backgroundOptions = document.querySelectorAll('.background-option');
+const infoToggle = document.getElementById('info-toggle');
+const infoPopup = document.getElementById('info-popup');
 
 // Global variables
 let currentUser = null;
@@ -45,96 +47,217 @@ let currentBackground = 'none'; // Default background
 let socket = null;
 let isOffline = !navigator.onLine; // Track online/offline status
 let saveAbortController = null; // Added for AbortController
+let isInfoPopupOpen = false;
 
 // Wrap DOM-dependent code in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Get elements that might not be ready immediately
-    const showRegister = document.getElementById('show-register');
-    const showLogin = document.getElementById('show-login');
-    const loginButton = document.getElementById('login-button');
-    const registerButton = document.getElementById('register-button');
-    const logoutBtn = document.getElementById('logout-btn');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const showLoginBtn = document.getElementById('show-login-btn');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-    const showForgotPassword = document.getElementById('show-forgot-password');
-    const forgotPasswordButton = document.getElementById('forgot-password-button');
-    const showLoginFromForgot = document.getElementById('show-login-from-forgot');
-    const themeToggle = document.getElementById('theme-toggle');
-    const createNoteBtn = document.getElementById('create-note-btn');
+    console.log("DOM fully loaded and parsed");
+
+    // Get essential containers first
+    const appContainer = document.getElementById('app-container');
     const authModal = document.getElementById('auth-modal');
+    const notesList = document.getElementById('notes-list');
+    const noteView = document.getElementById('note-view');
     const themePalette = document.getElementById('theme-palette');
-    const themeOptions = document.querySelectorAll('.theme-option');
-    const fontOptions = document.querySelectorAll('.font-option');
-    const backgroundOptions = document.querySelectorAll('.background-option');
+    const infoPopup = document.getElementById('info-popup');
 
-    // Event Listeners (now safely attached)
-    if (showRegister) showRegister.addEventListener('click', () => { /* ... */ });
-    if (showLogin) showLogin.addEventListener('click', () => { /* ... */ });
+    // Check if critical elements exist
+    if (!appContainer || !authModal || !notesList || !noteView) {
+        console.error("CRITICAL ERROR: Essential app containers not found. Aborting script.");
+        return;
+    }
+
+    // --- Attach Event Listeners Safely --- 
+
+    const showRegister = document.getElementById('show-register');
+    if (showRegister) {
+showRegister.addEventListener('click', () => {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const forgotPasswordForm = document.getElementById('forgot-password-form');
+            const modalTitle = document.getElementById('modal-title');
+            const modalSubtitle = document.getElementById('modal-subtitle');
+            if(loginForm) loginForm.style.display = 'none';
+            if(registerForm) registerForm.style.display = 'block';
+            if(forgotPasswordForm) forgotPasswordForm.style.display = 'none';
+            if(modalTitle) modalTitle.textContent = 'Register';
+            if(modalSubtitle) modalSubtitle.textContent = 'Create an account to save notes';
+        });
+    } else console.warn('Element #show-register not found');
+
+    const showLogin = document.getElementById('show-login');
+    if (showLogin) {
+showLogin.addEventListener('click', () => {
+             const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const forgotPasswordForm = document.getElementById('forgot-password-form');
+            const modalTitle = document.getElementById('modal-title');
+            const modalSubtitle = document.getElementById('modal-subtitle');
+            if(registerForm) registerForm.style.display = 'none';
+            if(loginForm) loginForm.style.display = 'block';
+            if(forgotPasswordForm) forgotPasswordForm.style.display = 'none';
+            if(modalTitle) modalTitle.textContent = 'Sign In';
+            if(modalSubtitle) modalSubtitle.textContent = 'Sync your notes across devices';
+        });
+    } else console.warn('Element #show-login not found');
+
+    const loginButton = document.getElementById('login-button');
     if (loginButton) loginButton.addEventListener('click', login);
-    if (registerButton) registerButton.addEventListener('click', register);
-    if (createNoteBtn) createNoteBtn.addEventListener('click', createNewNote);
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
-    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-    if (showLoginBtn) showLoginBtn.addEventListener('click', () => { /* ... */ });
-    if (showForgotPassword) showForgotPassword.addEventListener('click', () => { /* ... */ });
-    if (showLoginFromForgot) showLoginFromForgot.addEventListener('click', () => { /* ... */ });
-    if (forgotPasswordButton) forgotPasswordButton.addEventListener('click', requestPasswordReset);
-    if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => { /* ... */ });
-    if (authModal) authModal.addEventListener('click', (event) => { /* ... */ });
-    if (themeToggle) themeToggle.addEventListener('click', toggleThemePalette);
+    else console.warn('Element #login-button not found');
 
-    if (themeOptions) {
+    const registerButton = document.getElementById('register-button');
+    if (registerButton) registerButton.addEventListener('click', register);
+    else console.warn('Element #register-button not found');
+
+    const createNoteBtn = document.getElementById('create-note-btn');
+    if (createNoteBtn) createNoteBtn.addEventListener('click', createNewNote);
+    else console.warn('Element #create-note-btn not found');
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    else console.warn('Element #logout-btn not found');
+
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+    else console.warn('Element #sidebar-toggle not found');
+
+    const showLoginBtn = document.getElementById('show-login-btn');
+    if (showLoginBtn) {
+showLoginBtn.addEventListener('click', () => {
+            if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-visible')) {
+                toggleMobileSidebar();
+            }
+            if (!authModal) return;
+    authModal.classList.add('visible');
+            
+            // Get refs inside callback to ensure they exist when clicked
+            const currentLoginForm = document.getElementById('login-form');
+            const currentRegisterForm = document.getElementById('register-form');
+            const currentForgotForm = document.getElementById('forgot-password-form');
+            const currentModalTitle = document.getElementById('modal-title');
+            const currentModalSubtitle = document.getElementById('modal-subtitle');
+
+            if(currentRegisterForm) currentRegisterForm.style.display = 'none';
+            if(currentLoginForm) currentLoginForm.style.display = 'block';
+            if(currentForgotForm) currentForgotForm.style.display = 'none';
+            if(currentModalTitle) currentModalTitle.textContent = 'Sign In';
+            if(currentModalSubtitle) currentModalSubtitle.textContent = 'Sync your notes across devices';
+        }); 
+    } else console.warn('Element #show-login-btn not found');
+
+    const showForgotPassword = document.getElementById('show-forgot-password');
+     if (showForgotPassword) {
+showForgotPassword.addEventListener('click', () => {
+             const currentLoginForm = document.getElementById('login-form');
+             const currentRegisterForm = document.getElementById('register-form');
+             const currentForgotForm = document.getElementById('forgot-password-form');
+             const currentModalTitle = document.getElementById('modal-title');
+             const currentModalSubtitle = document.getElementById('modal-subtitle');
+
+             if(currentLoginForm) currentLoginForm.style.display = 'none';
+             if(currentRegisterForm) currentRegisterForm.style.display = 'none';
+             if(currentForgotForm) currentForgotForm.style.display = 'block';
+             if(currentModalTitle) currentModalTitle.textContent = 'Reset Password';
+             if(currentModalSubtitle) currentModalSubtitle.textContent = 'Enter your email to receive a reset link.';
+         });
+     } else console.warn('Element #show-forgot-password not found');
+
+     const showLoginFromForgot = document.getElementById('show-login-from-forgot');
+     if (showLoginFromForgot) {
+showLoginFromForgot.addEventListener('click', () => {
+             const currentLoginForm = document.getElementById('login-form');
+             const currentRegisterForm = document.getElementById('register-form');
+             const currentForgotForm = document.getElementById('forgot-password-form');
+             const currentModalTitle = document.getElementById('modal-title');
+             const currentModalSubtitle = document.getElementById('modal-subtitle');
+
+             if(currentForgotForm) currentForgotForm.style.display = 'none';
+             if(currentRegisterForm) currentRegisterForm.style.display = 'none';
+             if(currentLoginForm) currentLoginForm.style.display = 'block';
+             if(currentModalTitle) currentModalTitle.textContent = 'Sign In';
+             if(currentModalSubtitle) currentModalSubtitle.textContent = 'Sync your notes across devices';
+         });
+     } else console.warn('Element #show-login-from-forgot not found');
+
+    const forgotPasswordButton = document.getElementById('forgot-password-button');
+    if (forgotPasswordButton) forgotPasswordButton.addEventListener('click', requestPasswordReset);
+    else console.warn('Element #forgot-password-button not found');
+
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    if (modalCloseBtn) {
+modalCloseBtn.addEventListener('click', () => {
+            if(authModal) authModal.classList.remove('visible');
+});
+    } else console.warn('Element #modal-close-btn not found');
+
+    if (authModal) {
+authModal.addEventListener('click', (event) => {
+    if (event.target === authModal) {
+        authModal.classList.remove('visible');
+    }
+});
+    } // No warning needed for authModal, checked earlier
+
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) themeToggle.addEventListener('click', toggleThemePalette);
+    else console.warn('Element #theme-toggle not found');
+    
+    const infoToggle = document.getElementById('info-toggle'); 
+    if (infoToggle) infoToggle.addEventListener('click', toggleInfoPopup);
+    else console.warn('Element #info-toggle not found');
+
+    const themeOptions = document.querySelectorAll('.theme-option');
+    if (themeOptions.length > 0) {
 themeOptions.forEach(option => {
     option.addEventListener('click', function() {
         const theme = this.getAttribute('data-theme');
-                if (!theme) {
-                    console.error('Theme name is missing from data-theme attribute!');
-                    return;
-                }
+                if (!theme) return;
         setTheme(theme);
     });
 });
-    }
+    } else console.warn('No .theme-option elements found');
 
-    if (fontOptions) {
+    const fontOptions = document.querySelectorAll('.font-option');
+    if (fontOptions.length > 0) {
 fontOptions.forEach(option => {
     option.addEventListener('click', function() {
         const font = this.getAttribute('data-font');
-                if (!font) {
-                    console.error('Font name is missing from data-font attribute!');
-                    return;
-                }
+                if (!font) return;
         setFont(font);
     });
 });
-    }
+    } else console.warn('No .font-option elements found');
 
-    if (backgroundOptions) {
+    const backgroundOptions = document.querySelectorAll('.background-option');
+    if (backgroundOptions.length > 0) {
 backgroundOptions.forEach(option => {
     option.addEventListener('click', function() {
         const background = this.getAttribute('data-background');
-                if (typeof background === 'undefined' || background === null) {
-                    console.error('Background name is missing from data-background attribute!');
-                    return;
-                }
+                if (typeof background === 'undefined' || background === null) return;
         setBackground(background);
     });
 });
-    }
+    } else console.warn('No .background-option elements found');
 
-    // Close theme palette or info popup when clicking outside
+    // Document click listener for closing popups
     document.addEventListener('click', function(event) {
-        // Safely reference themePalette and infoPopup now
+        // Use fresh references inside the handler
         const currentThemePalette = document.getElementById('theme-palette');
         const currentThemeToggle = document.getElementById('theme-toggle');
+        const currentInfoPopup = document.getElementById('info-popup');
+        const currentInfoToggle = document.getElementById('info-toggle');
 
+        // Use state variables to check if popups *should* be open
         if (isPaletteOpen && currentThemePalette && !currentThemePalette.contains(event.target) && event.target !== currentThemeToggle) {
             toggleThemePalette();
         }
+        if (isInfoPopupOpen && currentInfoPopup && !currentInfoPopup.contains(event.target) && event.target !== currentInfoToggle) {
+            toggleInfoPopup();
+        }
     });
 
-    // Initialize the app *after* the DOM is ready
+    // Initialize the app *after* all listeners are attached
+    console.log("Attaching listeners complete, initializing app...");
     initializeApp(); 
 });
 
@@ -183,17 +306,24 @@ function toggleMobileSidebar() {
 
 // Toggle sidebar (handles both desktop and mobile)
 function toggleSidebar() {
-    if (window.innerWidth <= 768) {
-        toggleMobileSidebar(); // Use the unified mobile toggle
-    } else {
-        // Desktop behavior
-        isSidebarHidden = !isSidebarHidden;
-        appContainer.classList.toggle('sidebar-hidden');
-        localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+    const currentAppContainer = document.getElementById('app-container'); // Get fresh reference
+    if (!currentAppContainer) return;
 
-        // Close popups when sidebar state changes on desktop
-        if (isPaletteOpen) {
+    if (window.innerWidth <= 768) {
+        toggleMobileSidebar(); 
+    } else {
+        isSidebarHidden = !isSidebarHidden;
+        currentAppContainer.classList.toggle('sidebar-hidden');
+        localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+        
+        // Close popups - Get fresh refs inside
+        const currentThemePalette = document.getElementById('theme-palette');
+        if (currentThemePalette?.classList.contains('active')) { 
             toggleThemePalette();
+        }
+        const currentInfoPopup = document.getElementById('info-popup');
+        if (currentInfoPopup?.classList.contains('active')) { 
+            toggleInfoPopup();
         }
     }
 }
@@ -1235,43 +1365,53 @@ async function requestPasswordReset() {
 
 // Toggle theme palette
 function toggleThemePalette() {
-    isPaletteOpen = !isPaletteOpen;
-    if (isPaletteOpen) {
-        themePalette.classList.add('active');
-        
-        // For mobile, also add a touch-friendly way to close by tapping outside
-        if (window.innerWidth <= 768) {
-            // Create and add a backdrop if it doesn't exist
-            if (!document.querySelector('.palette-backdrop')) {
-                const backdrop = document.createElement('div');
-                backdrop.className = 'palette-backdrop';
-                backdrop.style.position = 'fixed';
-                backdrop.style.top = '0';
-                backdrop.style.left = '0';
-                backdrop.style.right = '0';
-                backdrop.style.bottom = '0';
-                backdrop.style.zIndex = '109'; // Below palette but above other elements
-                backdrop.style.backgroundColor = 'transparent'; // Just for capturing taps
-                
-                // Close palette when tapping outside
-                backdrop.addEventListener('click', function(e) {
-                    if (isPaletteOpen) {
-                        toggleThemePalette();
-                    }
-                    this.remove();
-                });
-                
-                document.body.appendChild(backdrop);
-            }
-        }
+    const currentInfoPopup = document.getElementById('info-popup'); 
+    if (currentInfoPopup?.classList.contains('active')) { 
+        toggleInfoPopup();
+    }
+    const currentThemePalette = document.getElementById('theme-palette'); 
+    if (!currentThemePalette) return;
+    currentThemePalette.classList.toggle('active');
+    isPaletteOpen = currentThemePalette.classList.contains('active'); 
+
+    // Mobile backdrop logic
+    const backdrop = document.querySelector('.palette-backdrop');
+    if (isPaletteOpen && window.innerWidth <= 768) {
+         if (!backdrop) {
+             const newBackdrop = document.createElement('div');
+             newBackdrop.className = 'palette-backdrop';
+             // Add styles and listener (as before)
+             newBackdrop.style.position = 'fixed';
+             newBackdrop.style.top = '0';
+             newBackdrop.style.left = '0';
+             newBackdrop.style.right = '0';
+             newBackdrop.style.bottom = '0';
+             newBackdrop.style.zIndex = '109'; 
+             newBackdrop.style.backgroundColor = 'transparent';
+             newBackdrop.addEventListener('click', function() {
+                 if (isPaletteOpen) { // Check state variable
+                     toggleThemePalette();
+                 }
+             });
+             document.body.appendChild(newBackdrop);
+         }
     } else {
-        themePalette.classList.remove('active');
-        // Remove backdrop when closing
-        const backdrop = document.querySelector('.palette-backdrop');
         if (backdrop) {
-            backdrop.remove();
+            backdrop.remove(); // Remove backdrop if palette closed or not mobile
         }
     }
+}
+
+// Toggle info popup
+function toggleInfoPopup() {
+    const currentThemePalette = document.getElementById('theme-palette');
+    if (currentThemePalette?.classList.contains('active')) {
+        toggleThemePalette();
+    }
+    const currentInfoPopup = document.getElementById('info-popup');
+    if (!currentInfoPopup) return;
+    currentInfoPopup.classList.toggle('active');
+    isInfoPopupOpen = currentInfoPopup.classList.contains('active'); 
 }
 
 // Set theme function

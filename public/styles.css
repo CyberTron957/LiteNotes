@@ -625,10 +625,9 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 10;
+    z-index: 15; /* Increase z-index slightly */
     transition: all 0.3s;
     border: 1px solid var(--border);
-    margin-right: 10px;
 }
 
 .sidebar-toggle i {
@@ -844,18 +843,21 @@ body {
         position: fixed;
         top: 0;
         left: 0;
-        width: 80%; /* Adjust width as needed */
+        width: 80%; 
         max-width: 300px;
-        height: 100%; /* Use 100% height, adjust overflow */
-        height: -webkit-fill-available; /* iOS height fix */
-        z-index: 1000; /* High z-index */
-        background-color: var(--bg-primary); /* Ensure background */
+        height: 100%; 
+        height: -webkit-fill-available; 
+        z-index: 1000; 
+        background-color: var(--bg-primary); 
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Smooth transition */
+        /* Ensure ONLY transform is transitioned */
+        transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-        overflow-y: auto; /* Allow scrolling within sidebar */
+        overflow-y: auto; 
         border-bottom: none;
-        border-right: 1px solid var(--border); /* Add border for definition */
+        border-right: 1px solid var(--border); 
+        /* Reset desktop transition properties */
+        margin-left: 0 !important; 
     }
 
     /* Sidebar open state (controlled by body class) */
@@ -881,7 +883,7 @@ body {
         color: var(--bg-primary);
         border-radius: 50%;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        z-index: 1010; /* Above sidebar and overlay */
+        z-index: 990; /* Lowered z-index for buttons */
         border: none;
         display: flex; /* Use flex for centering */
         justify-content: center;
@@ -952,16 +954,18 @@ body {
         border-radius: 15px 15px 0 0;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         padding: 20px;
-        z-index: 1100; /* Above toggle */
+        z-index: 1000; /* Base z-index for inactive popup */
         background-color: var(--bg-secondary);
-        transform: translateY(100%); /* Initially hidden */
-        transition: transform 0.3s ease;
-        display: block; /* Ensure it's display block */
-        animation: none; /* Remove fadeIn animation */
+        transform: translateY(100%); 
+        transition: transform 0.3s ease, z-index 0s linear 0.3s; /* Delay z-index change */
+        display: block; 
+        animation: none; 
     }
 
     .theme-palette.active {
-         transform: translateY(0); /* Slide up */
+         transform: translateY(0);
+         z-index: 2000; /* High z-index for active popup */
+         transition: transform 0.3s ease, z-index 0s linear 0s; /* Apply z-index immediately */
     }
 
     .theme-palette::before {
@@ -1005,38 +1009,63 @@ body {
         position: fixed; 
         left: 20px;
         bottom: 20px;
-        z-index: 1010; 
-        /* Default state on mobile: hidden */
+        z-index: 990; /* Lowered z-index for buttons */
+        /* Hide by default on mobile */
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    /* Show theme toggle ONLY when sidebar is visible on mobile */
-    body.sidebar-visible .theme-toggle {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-    }
-
-    /* Info toggle styling (adjust similarly if kept) */
+    /* Info toggle styling fixed on mobile */
     .info-toggle { 
-        position: fixed;
+        position: fixed; 
         left: 70px; 
         bottom: 20px;
-        z-index: 1010;
-        /* Default hidden on mobile */
+        z-index: 990; /* Lowered z-index for buttons */
+        /* Hide by default on mobile */
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
+
+    /* Show buttons ONLY when mobile sidebar is visible */
+    body.sidebar-visible .theme-toggle,
     body.sidebar-visible .info-toggle {
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
     }
+
+    /* Info Popup positioning on mobile (keep fixed) */
+    .info-popup {
+        position: fixed;
+        left: 70px; 
+        bottom: 65px;
+        /* ... rest of info-popup mobile styles ... */
+        z-index: 1000; /* Base z-index for inactive popup */
+    }
+
+    .info-popup.active {
+         z-index: 2000; /* High z-index when active */
+    }
+
+    /* Theme Palette mobile positioning (Keep bottom sheet style) */
+    .theme-palette {
+        position: fixed;
+        /* ... rest of theme-palette mobile styles ... */
+    }
+
+    /* Remove the specific rule added previously to fix overlap, 
+       as hiding buttons when sidebar is closed now handles this */
+    /*
+    .theme-palette.active ~ .sidebar-toggle,
+    body:has(.theme-palette.active) .sidebar-toggle {
+        bottom: 20px; 
+        opacity: 0.5; 
+    }
+    */
 
     /* ... rest of mobile rules ... */
 }
@@ -1121,7 +1150,7 @@ body {
         position: fixed;
         left: 70px; 
         bottom: 20px;
-        z-index: 1010;
+        z-index: 990; /* Lowered z-index for buttons */
     }
 
     /* ... rest of mobile rules ... */
@@ -1684,8 +1713,8 @@ body {
 
 /* Info Toggle Button */
 .info-toggle {
-    position: absolute;
-    left: 70px; /* Position it to the right of the theme-toggle */
+    position: fixed;
+    left: 70px; /* Position next to theme toggle */
     bottom: 20px;
     background: var(--bg-secondary);
     width: 36px;
@@ -1695,7 +1724,7 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1010;
     transition: all 0.3s;
     border: 1px solid var(--border);
 }
@@ -1704,7 +1733,7 @@ body {
     font-size: 16px;
     color: var(--text-primary);
     transition: transform 0.3s;
-    pointer-events: none; 
+    pointer-events: none;
 }
 
 .info-toggle:hover {
@@ -1713,35 +1742,38 @@ body {
 
 /* Info Popup */
 .info-popup {
-    position: absolute;
-    left: 110px; /* Position relative to info toggle */
-    bottom: 20px;
+    position: absolute; /* Position relative to its parent container (or fixed if preferred) */
+    left: 70px; /* Align with info toggle button */
+    bottom: 65px; /* Position above the info toggle button */
     background-color: var(--bg-secondary);
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    padding: 10px 15px;
-    z-index: 100;
+    padding: 10px;
+    z-index: 1005; /* Below palette/toggle buttons when closed */
     display: none; /* Hidden by default */
     box-shadow: var(--shadow);
-    white-space: nowrap;
-    animation: fadeIn 0.3s ease-out;
+    width: auto; /* Adjust width based on content */
+    min-width: 100px;
 }
 
 .info-popup.active {
     display: block;
+    animation: fadeIn 0.2s ease-out;
+    z-index: 1150; /* Above buttons when open */
 }
 
 .info-link {
     display: block;
+    padding: 8px 10px;
     color: var(--text-primary);
     text-decoration: none;
-    padding: 5px 0;
     font-size: 0.9rem;
-    transition: color 0.2s;
+    border-radius: var(--radius);
+    transition: background-color 0.2s;
 }
 
 .info-link:hover {
-    color: var(--text-secondary);
+    background-color: var(--hover);
 }
 
 /* Mobile adjustments for Info Toggle/Popup */
@@ -1765,4 +1797,15 @@ body {
 .container.sidebar-hidden .info-toggle {
     opacity: 0;
     visibility: hidden;
+}
+
+/* HIDE buttons and popups when sidebar is hidden on DESKTOP */
+.container.sidebar-hidden .theme-toggle,
+.container.sidebar-hidden .info-toggle,
+.container.sidebar-hidden .theme-palette,
+.container.sidebar-hidden .info-popup {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.1s ease, visibility 0.1s ease; /* Faster hide transition */
 }
