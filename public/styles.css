@@ -1612,3 +1612,82 @@ body {
 .theme-color.lavender { background-color: #f9f7ff; border: 1px solid #d2caec; }
 .theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
 .theme-color.monochrome { background-color: #000000; border: 1px solid #333333; border-radius: 50%; }
+
+/* Info Toggle Button */
+.info-toggle {
+    position: absolute;
+    left: 65px; /* Position next to theme toggle */
+    bottom: 20px;
+    background: var(--bg-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s;
+    border: 1px solid var(--border);
+}
+
+.info-toggle i {
+    font-size: 16px;
+    color: var(--text-primary);
+    transition: transform 0.3s;
+    pointer-events: none; 
+}
+
+.info-toggle:hover {
+    transform: translateY(-2px);
+}
+
+/* Info Popup */
+.info-popup {
+    position: absolute;
+    left: 110px; /* Position relative to info toggle */
+    bottom: 20px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 10px 15px;
+    z-index: 100;
+    display: none; /* Hidden by default */
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.info-popup.active {
+    display: block;
+}
+
+.info-link {
+    display: block;
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 5px 0;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.info-link:hover {
+    color: var(--text-secondary);
+}
+
+/* Mobile adjustments for Info Toggle/Popup */
+@media (max-width: 768px) {
+    .info-toggle {
+        left: 65px; /* Keep next to theme toggle on mobile sidebar */
+        bottom: 20px;
+    }
+
+    .info-popup {
+        /* Position above the button on mobile */
+        left: 20px; 
+        bottom: 65px; /* Align bottom edge with theme palette bottom */
+        width: auto;
+        max-width: calc(100% - 40px);
+        z-index: 1200; /* Ensure it's above toggle like theme palette */
+    }
+}

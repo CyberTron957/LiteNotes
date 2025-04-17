@@ -29,6 +29,8 @@ const themePalette = document.getElementById('theme-palette');
 const themeOptions = document.querySelectorAll('.theme-option');
 const fontOptions = document.querySelectorAll('.font-option');
 const backgroundOptions = document.querySelectorAll('.background-option');
+const infoToggle = document.getElementById('info-toggle');
+const infoPopup = document.getElementById('info-popup');
 
 // Global variables
 let currentUser = null;
@@ -46,6 +48,7 @@ let currentBackground = 'none'; // Default background
 let socket = null;
 let isOffline = !navigator.onLine; // Track online/offline status
 let saveAbortController = null; // Added for AbortController
+let isInfoPopupOpen = false; // Added global for info popup state
 
 // Set up offline/online event listeners
 window.addEventListener('online', handleOnlineStatusChange);
@@ -148,6 +151,9 @@ authModal.addEventListener('click', (event) => {
 // Theme toggle functionality
 themeToggle.addEventListener('click', toggleThemePalette);
 
+// Info toggle functionality
+infoToggle.addEventListener('click', toggleInfoPopup);
+
 // Theme options click events
 themeOptions.forEach(option => {
     option.addEventListener('click', function() {
@@ -165,10 +171,15 @@ fontOptions.forEach(option => {
     });
 });
 
-// Close theme palette when clicking outside
+// Close theme palette or info popup when clicking outside
 document.addEventListener('click', function(event) {
+    // Close theme palette
     if (isPaletteOpen && !themePalette.contains(event.target) && event.target !== themeToggle) {
         toggleThemePalette();
+    }
+    // Close info popup
+    if (isInfoPopupOpen && !infoPopup.contains(event.target) && event.target !== infoToggle) {
+        toggleInfoPopup();
     }
 });
 
@@ -1256,6 +1267,11 @@ async function requestPasswordReset() {
 
 // Toggle theme palette
 function toggleThemePalette() {
+    // Close info popup if it's open
+    if (isInfoPopupOpen) {
+        toggleInfoPopup(); 
+    }
+    
     isPaletteOpen = !isPaletteOpen;
     if (isPaletteOpen) {
         themePalette.classList.add('active');
@@ -1292,6 +1308,21 @@ function toggleThemePalette() {
         if (backdrop) {
             backdrop.remove();
         }
+    }
+}
+
+// Toggle info popup
+function toggleInfoPopup() {
+    // Close theme palette if it's open
+    if (isPaletteOpen) {
+        toggleThemePalette();
+    }
+    
+    isInfoPopupOpen = !isInfoPopupOpen;
+    if (isInfoPopupOpen) {
+        infoPopup.classList.add('active');
+    } else {
+        infoPopup.classList.remove('active');
     }
 }
 
