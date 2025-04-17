@@ -36,7 +36,7 @@ app.use(express.static('public'));
 // Consider removing session middleware if only using JWT and not session features
 // If keeping, ensure a proper session store (like connect-pg-simple) is used for production
 app.use(session({
-    secret: SECRET_KEY || 'insecure-fallback-key-for-session', // Use fallback ONLY if SECRET_KEY is missing, but session needs a secret
+    secret: SECRET_KEY || 'insecure-fallback-key-for-session', 
     resave: false,
     saveUninitialized: false,
     // Production recommendation: use a proper session store like connect-pg-simple

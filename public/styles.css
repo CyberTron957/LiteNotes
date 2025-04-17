@@ -836,7 +836,7 @@ body {
         /* Prevent horizontal scrolling on the container itself */
         overflow-x: hidden;
     }
-
+    
     /* Sidebar base styles for mobile */
     .sidebar {
         position: fixed;

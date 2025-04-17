@@ -45,6 +45,7 @@ let currentFont = 'inter'; // Default font
 let currentBackground = 'none'; // Default background
 let socket = null;
 let isOffline = !navigator.onLine; // Track online/offline status
+let saveAbortController = null; // Added for AbortController
 
 // Set up offline/online event listeners
 window.addEventListener('online', handleOnlineStatusChange);
@@ -844,20 +845,29 @@ function createLocalNote() {
 function scheduleNoteSave(saveStatusDot) { // Pass the dot element
     // Show saving indicator dot
     if (saveStatusDot) {
-        clearTimeout(statusDotFadeTimeout); // Clear existing fade timeout
+        clearTimeout(statusDotFadeTimeout);
         saveStatusDot.classList.remove('saved', 'error');
         saveStatusDot.classList.add('saving', 'visible');
     }
-    
+
     // Clear existing timeout
     if (saveTimeout) {
         clearTimeout(saveTimeout);
     }
-    
+
+    // --- Abort previous pending save fetch --- Added
+    if (saveAbortController) {
+        console.log('Aborting previous save request...');
+        saveAbortController.abort();
+    }
+    // Create a new controller for the upcoming save
+    saveAbortController = new AbortController();
+    // -------------------------------------------
+
     // Schedule new save
     saveTimeout = setTimeout(() => {
         saveCurrentNote();
-    }, 500); // Reduced delay to 0.5 seconds
+    }, 1500); // Increased delay to 1.5 seconds (from 0.5)
 }
 
 // --- Scroll Position Persistence ---
@@ -929,9 +939,13 @@ async function saveCurrentNote() {
                     'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ title: title, content })
+                body: JSON.stringify({ title: title, content }),
+                signal: saveAbortController?.signal // Pass the abort signal - Added
             });
             
+            // Reset controller only after successful completion or non-abort error
+            saveAbortController = null; // Added reset here
+
             if (!response.ok) {
                 if (response.status === 0) {
                     // Network error - likely offline
@@ -959,8 +973,15 @@ async function saveCurrentNote() {
             }
 
         } catch (error) {
-            // Check if it's a network error
-            if (!navigator.onLine || error.message.includes('network') || error.message.includes('fetch')) {
+            // Handle AbortError specifically
+            if (error.name === 'AbortError') {
+                console.log('Save fetch request aborted.');
+                // Don't show an error toast for expected aborts
+                // Keep the saving indicator potentially?
+                saveStatusDot.classList.remove('saved', 'error'); // Reset dot state
+                saveStatusDot.classList.add('saving'); // Maybe keep saving? Or remove visible? Test UX.
+                // saveStatusDot.classList.remove('visible'); 
+            } else if (!navigator.onLine || error.message.includes('network') || error.message.includes('fetch')) {
                 isOffline = true;
                 showToast('Network unavailable. Working in offline mode.', 'info');
                 saveLocalNotes(); // Save locally as fallback
@@ -968,11 +989,13 @@ async function saveCurrentNote() {
                 // Update dot to indicate local save (still green)
                 saveStatusDot.classList.remove('saving', 'error');
                 saveStatusDot.classList.add('saved', 'visible');
+                saveAbortController = null; // Reset controller on other errors too
             } else {
                 showToast(error.message, 'error');
                 // Indicate error with red dot
                 saveStatusDot.classList.remove('saving', 'saved');
                 saveStatusDot.classList.add('error', 'visible');
+                saveAbortController = null; // Reset controller on other errors too
             }
         }
     } else {
@@ -993,6 +1016,7 @@ async function saveCurrentNote() {
         if (contentInput) {
             saveScrollPosition(currentNoteId, contentInput.scrollTop);
         }
+        saveAbortController = null; // Reset controller even for local save
     }
 }
 
