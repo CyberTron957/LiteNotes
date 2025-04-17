@@ -235,8 +235,15 @@ body {
     padding: 0;
     position: relative;
     width: 100%;
-    padding-left: 20px;
     transition: padding-left 0.3s ease;
+}
+
+#note-view { /* Parent container for title and content */
+    flex: 1; /* Take up all available space in main-content */
+    display: flex;
+    flex-direction: column; 
+    overflow: hidden; /* Prevent note-view itself from scrolling */
+    position: relative; /* Needed for absolute positioning of background/actions */
 }
 
 .sidebar-header {
@@ -363,12 +370,14 @@ body {
     margin-bottom: 0.5em; /* Space below title */
     display: block;
     box-sizing: border-box;
+    flex-shrink: 0; /* Prevent title from shrinking */
 }
 
 .note-content-editor { /* Renamed from note-editor for clarity */
     width: 100%;
-    /* Calculate height to fill remaining space */
-    height: calc(100% - 50px - 1.4em - 0.5em); /* Adjust based on title height/margin */
+    /* Remove calculated height, use flexbox */
+    /* height: calc(100% - 50px - 1.4em - 0.5em); */
+    flex: 1; /* Allow content editor to grow and fill remaining space */
     background: transparent;
     border: none;
     color: var(--text-primary);
@@ -379,11 +388,11 @@ body {
     /* Adjust padding: No top padding, match horizontal, keep bottom */
     padding: 0 100px 50vh 100px; 
     border-radius: 0;
-    overflow-y: auto;
+    overflow-y: auto; /* Enable scrolling *within* the content editor */
     caret-color: var(--text-primary);
     white-space: pre-wrap;
     word-wrap: break-word;
-    /* position: relative; */ /* Removed, likely not needed now */
+    box-sizing: border-box; /* Include padding in width/height calculation */
 }
 
 /* Custom Scrollbar for WebKit browsers (apply to content editor) */
@@ -410,6 +419,10 @@ body {
 @media (max-width: 768px) {
     /* ... existing mobile rules ... */
 
+    #note-view { /* Ensure flex works on mobile too */
+        /* Inherits flex from base styles, no changes needed unless overrides exist */
+    }
+
     /* Adjust mobile title/content padding */
     .note-title-input {
         padding: 30px 15px 0;
@@ -419,7 +432,10 @@ body {
     .note-content-editor {
         padding: 0 15px 30vh 15px; 
         font-size: 16px; 
-        height: calc(100% - 30px - 1.4em - 0.5em); /* Adjust height calc */
+        /* Remove height calc here too */
+        /* height: calc(100% - 30px - 1.4em - 0.5em); */
+        flex: 1; /* Ensure flex grow works */
+        overflow-y: auto; /* Ensure scrolling */
     }
 }
 

@@ -807,9 +807,9 @@ function renderNoteView(note) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'note-actions';
     actionsDiv.innerHTML = `
-        <div class="delete-note" id="delete-note-btn" title="Delete note">
-             <i class="fas fa-trash"></i>
-        </div>
+            <div class="delete-note" id="delete-note-btn" title="Delete note">
+                 <i class="fas fa-trash"></i>
+            </div>
     `;
 
     const statusDotDiv = document.createElement('div');
@@ -1039,11 +1039,11 @@ function getScrollPosition(noteId) {
 // Save the current note
 async function saveCurrentNote() {
     if (!currentNoteId) return;
-
+    
     const titleInput = document.getElementById('note-title');
     const contentTextarea = document.getElementById('note-content');
-    const saveStatusDot = document.getElementById('save-status-dot');
-
+    const saveStatusDot = document.getElementById('save-status-dot'); 
+    
     if (!titleInput || !contentTextarea || !saveStatusDot) return;
 
     // --- Get title and content from separate fields --- 
@@ -1068,7 +1068,7 @@ async function saveCurrentNote() {
         // Sorting primarily relies on updated_at, which always changes
         notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         renderNotesList(); // Render list to reflect potential order change
-
+        
     }
 
     if (currentToken && !isOffline) {
@@ -1089,7 +1089,7 @@ async function saveCurrentNote() {
             });
 
             saveAbortController = null;
-
+            
             if (!response.ok) {
                 if (response.status === 0) {
                     // Network error - likely offline
@@ -1100,8 +1100,8 @@ async function saveCurrentNote() {
                 throw new Error('Failed to save note to server');
             }
             } else {
-                saveStatusDot.classList.remove('saving', 'error');
-                saveStatusDot.classList.add('saved', 'visible');
+            saveStatusDot.classList.remove('saving', 'error');
+            saveStatusDot.classList.add('saved', 'visible');
             }
 
             clearTimeout(statusDotFadeTimeout);
