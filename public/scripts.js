@@ -40,8 +40,7 @@ let currentNoteId = null;
 let saveTimeout = null;
 let statusDotFadeTimeout = null; // Timeout ID for dot fade
 let isSidebarHidden = true; // Default to hidden
-let isDarkMode = true; // Default to dark mode
-let currentTheme = 'dark'; // Default theme
+let currentTheme = 'light'; // Default theme
 let isPaletteOpen = false;
 let currentFont = 'inter'; // Default font
 let currentBackground = 'none'; // Default background
@@ -50,7 +49,107 @@ let isOffline = !navigator.onLine; // Track online/offline status
 let saveAbortController = null; // Added for AbortController
 let isInfoPopupOpen = false; // Added global for info popup state
 
-// Set up offline/online event listeners
+// Wrap DOM-dependent code in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Get elements that might not be ready immediately
+    const showRegister = document.getElementById('show-register');
+    const showLogin = document.getElementById('show-login');
+    const loginButton = document.getElementById('login-button');
+    const registerButton = document.getElementById('register-button');
+    const logoutBtn = document.getElementById('logout-btn');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const showLoginBtn = document.getElementById('show-login-btn');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const showForgotPassword = document.getElementById('show-forgot-password');
+    const forgotPasswordButton = document.getElementById('forgot-password-button');
+    const showLoginFromForgot = document.getElementById('show-login-from-forgot');
+    const themeToggle = document.getElementById('theme-toggle');
+    const infoToggle = document.getElementById('info-toggle'); // Now safely accessed
+    const createNoteBtn = document.getElementById('create-note-btn');
+    const authModal = document.getElementById('auth-modal');
+    const themePalette = document.getElementById('theme-palette');
+    const infoPopup = document.getElementById('info-popup');
+    const themeOptions = document.querySelectorAll('.theme-option');
+    const fontOptions = document.querySelectorAll('.font-option');
+    const backgroundOptions = document.querySelectorAll('.background-option');
+
+    // Event Listeners (now safely attached)
+    if (showRegister) showRegister.addEventListener('click', () => { /* ... */ });
+    if (showLogin) showLogin.addEventListener('click', () => { /* ... */ });
+    if (loginButton) loginButton.addEventListener('click', login);
+    if (registerButton) registerButton.addEventListener('click', register);
+    if (createNoteBtn) createNoteBtn.addEventListener('click', createNewNote);
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+    if (showLoginBtn) showLoginBtn.addEventListener('click', () => { /* ... */ });
+    if (showForgotPassword) showForgotPassword.addEventListener('click', () => { /* ... */ });
+    if (showLoginFromForgot) showLoginFromForgot.addEventListener('click', () => { /* ... */ });
+    if (forgotPasswordButton) forgotPasswordButton.addEventListener('click', requestPasswordReset);
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => { /* ... */ });
+    if (authModal) authModal.addEventListener('click', (event) => { /* ... */ });
+    if (themeToggle) themeToggle.addEventListener('click', toggleThemePalette);
+    if (infoToggle) infoToggle.addEventListener('click', toggleInfoPopup);
+
+    if (themeOptions) {
+        themeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme');
+                if (!theme) {
+                    console.error('Theme name is missing from data-theme attribute!');
+                    return;
+                }
+                setTheme(theme);
+            });
+        });
+    }
+
+    if (fontOptions) {
+        fontOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const font = this.getAttribute('data-font');
+                if (!font) {
+                    console.error('Font name is missing from data-font attribute!');
+                    return;
+                }
+                setFont(font);
+            });
+        });
+    }
+
+    if (backgroundOptions) {
+        backgroundOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const background = this.getAttribute('data-background');
+                if (typeof background === 'undefined' || background === null) {
+                    console.error('Background name is missing from data-background attribute!');
+                    return;
+                }
+                setBackground(background);
+            });
+        });
+    }
+
+    // Close theme palette or info popup when clicking outside
+    document.addEventListener('click', function(event) {
+        // Safely reference themePalette and infoPopup now
+        const currentThemePalette = document.getElementById('theme-palette');
+        const currentInfoPopup = document.getElementById('info-popup');
+        const currentThemeToggle = document.getElementById('theme-toggle');
+        const currentInfoToggle = document.getElementById('info-toggle');
+
+        if (isPaletteOpen && currentThemePalette && !currentThemePalette.contains(event.target) && event.target !== currentThemeToggle) {
+            toggleThemePalette();
+        }
+        if (isInfoPopupOpen && currentInfoPopup && !currentInfoPopup.contains(event.target) && event.target !== currentInfoToggle) {
+            toggleInfoPopup();
+        }
+    });
+
+    // Initialize the app *after* the DOM is ready
+    initializeApp(); 
+});
+
+// Set up offline/online event listeners (can be outside DOMContentLoaded)
 window.addEventListener('online', handleOnlineStatusChange);
 window.addEventListener('offline', handleOnlineStatusChange);
 
@@ -71,126 +170,6 @@ function handleOnlineStatusChange() {
         showToast('Offline mode enabled. Changes will be saved locally.', 'info');
     }
 }
-
-// Event Listeners
-showRegister.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    forgotPasswordForm.style.display = 'none';
-    modalTitle.textContent = 'Register';
-    modalSubtitle.textContent = 'Create an account to save notes';
-});
-
-showLogin.addEventListener('click', () => {
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    forgotPasswordForm.style.display = 'none';
-    modalTitle.textContent = 'Sign In';
-    modalSubtitle.textContent = 'Sync your notes across devices';
-});
-
-loginButton.addEventListener('click', login);
-registerButton.addEventListener('click', register);
-createNoteBtn.addEventListener('click', createNewNote);
-
-// Logout functionality
-logoutBtn.addEventListener('click', logout);
-
-// Toggle sidebar
-sidebarToggle.addEventListener('click', toggleSidebar);
-
-// Show login modal
-showLoginBtn.addEventListener('click', () => {
-    // Close mobile sidebar if open before showing modal
-    if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-visible')) {
-        toggleMobileSidebar();
-    }
-    
-    authModal.classList.add('visible');
-    // Ensure login form is visible by default when modal opens
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    forgotPasswordForm.style.display = 'none';
-    modalTitle.textContent = 'Sign In';
-    modalSubtitle.textContent = 'Sync your notes across devices';
-});
-
-// Show Forgot Password form
-showForgotPassword.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'none';
-    forgotPasswordForm.style.display = 'block';
-    modalTitle.textContent = 'Reset Password';
-    modalSubtitle.textContent = 'Enter your email to receive a reset link.';
-});
-
-// Show Login from Forgot Password form
-showLoginFromForgot.addEventListener('click', () => {
-    forgotPasswordForm.style.display = 'none';
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    modalTitle.textContent = 'Sign In';
-    modalSubtitle.textContent = 'Sync your notes across devices';
-});
-
-// Forgot Password button action
-forgotPasswordButton.addEventListener('click', requestPasswordReset);
-
-// Close login modal
-modalCloseBtn.addEventListener('click', () => {
-    authModal.classList.remove('visible');
-});
-
-authModal.addEventListener('click', (event) => {
-    // Close if clicked outside the modal content
-    if (event.target === authModal) {
-        authModal.classList.remove('visible');
-    }
-});
-
-// Theme toggle functionality
-themeToggle.addEventListener('click', toggleThemePalette);
-
-// Info toggle functionality
-infoToggle.addEventListener('click', toggleInfoPopup);
-
-// Theme options click events
-themeOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        const theme = this.getAttribute('data-theme');
-        setTheme(theme);
-    });
-});
-
-// Font option click events
-fontOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        const font = this.getAttribute('data-font');
-        setFont(font);
-        // Don't close the palette when changing font
-    });
-});
-
-// Close theme palette or info popup when clicking outside
-document.addEventListener('click', function(event) {
-    // Close theme palette
-    if (isPaletteOpen && !themePalette.contains(event.target) && event.target !== themeToggle) {
-        toggleThemePalette();
-    }
-    // Close info popup
-    if (isInfoPopupOpen && !infoPopup.contains(event.target) && event.target !== infoToggle) {
-        toggleInfoPopup();
-    }
-});
-
-// Background option click events
-backgroundOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        const background = this.getAttribute('data-background');
-        setBackground(background);
-        // Don't close the palette when changing background
-    });
-});
 
 // Mobile sidebar overlay handling
 let sidebarOverlay;
@@ -222,6 +201,14 @@ function toggleSidebar() {
         isSidebarHidden = !isSidebarHidden;
         appContainer.classList.toggle('sidebar-hidden');
         localStorage.setItem('sidebarState', isSidebarHidden ? 'hidden' : 'visible');
+
+        // Close popups when sidebar state changes on desktop
+        if (isPaletteOpen) {
+            toggleThemePalette();
+        }
+        if (isInfoPopupOpen) {
+            toggleInfoPopup();
+        }
     }
 }
 
@@ -263,26 +250,21 @@ async function initializeApp() {
 
     // Check for saved theme and font preferences
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        // Handle case where saved theme is 'dark' which we've removed
-        if (savedTheme === 'dark') {
-            // Use 'slate' as fallback for 'dark'
-            setTheme('slate');
-        } 
-        // Handle case where saved theme is 'mono' or 'warm' which we've removed
-        else if (savedTheme === 'mono' || savedTheme === 'warm') {
-            // Use 'rose-gold' as fallback for removed themes
-            setTheme('rose-gold');
-        }
-        else {
-            setTheme(savedTheme);
-        }
+    // Define valid themes *after* removing dark/mono/warm
+    const validThemes = ['light', 'sepia', 'slate', 'midnight', 'charcoal', 'forest', 'blue', 'mint', 'lavender', 'rose-gold', 'monochrome']; // Update this list if themes change
+    let themeToSet = 'light'; // Default to light theme
+
+    if (savedTheme && validThemes.includes(savedTheme)) {
+        themeToSet = savedTheme;
+    } else if (savedTheme) {
+        // If saved theme is invalid (e.g., old 'dark'), use a fallback
+        console.warn(`Invalid saved theme "${savedTheme}" found, falling back to light.`);
+        themeToSet = 'light'; // Fallback for any invalid saved theme
     } else {
-        // On first visit with no saved theme, use a random theme
-        const themes = ['light', 'sepia', 'blue', 'mint', 'lavender', 'rose-gold', 'slate', 'midnight', 'forest', 'monochrome'];
-        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
-        setTheme(randomTheme);
+        // On first visit with no saved theme, use a random *valid* theme
+        themeToSet = validThemes[Math.floor(Math.random() * validThemes.length)];
     }
+    setTheme(themeToSet);
     
     const savedFont = localStorage.getItem('font');
     if (savedFont) {
@@ -1328,65 +1310,49 @@ function toggleInfoPopup() {
 
 // Set theme function
 function setTheme(theme) {
-    // Remove all possible theme classes
-    document.body.classList.remove(
-        'light-theme', 
-        'sepia-theme', 
-        'slate-theme', 
-        'midnight-theme', 
-        'charcoal-theme', 
-        'forest-theme', 
-        'blue-theme', 
-        'mint-theme', 
-        'lavender-theme', 
-        'rose-gold-theme',
-        'monochrome-theme'
-    );
+    const bodyClassList = document.body.classList;
+    const themesToRemove = [
+        'light-theme', 'sepia-theme', 'slate-theme', 'midnight-theme', 
+        'charcoal-theme', 'forest-theme', 'blue-theme', 'mint-theme', 
+        'lavender-theme', 'rose-gold-theme', 'monochrome-theme'
+    ];
     
-    // Add appropriate theme class
-    if (theme !== 'dark') {
-        document.body.classList.add(`${theme}-theme`);
-    }
+    themesToRemove.forEach(cls => bodyClassList.remove(cls));
     
-    // Update active state in theme palette
-    themeOptions.forEach(option => {
-        if (option.getAttribute('data-theme') === theme) {
-            option.classList.add('active');
-        } else {
-            option.classList.remove('active');
-        }
+    // Add the new theme class 
+    bodyClassList.add(`${theme}-theme`); 
+    
+    // Update active state in theme palette - Use the options queried in DOMContentLoaded
+    // Re-querying inside might be slightly safer if DOM changes, but let's simplify first.
+    const allThemeOptions = document.querySelectorAll('.theme-option'); // Use local query
+    allThemeOptions.forEach(option => {
+        option.classList.toggle('active', option.getAttribute('data-theme') === theme);
     });
     
     // Save theme preference
     localStorage.setItem('theme', theme);
     currentTheme = theme;
 
-    // Clear any inline styles that might interfere with CSS variables
-    createNoteBtn.removeAttribute('style');
+    // Clear any inline styles that might interfere
+    const currentCreateNoteBtn = document.getElementById('create-note-btn');
+    if (currentCreateNoteBtn) {
+         currentCreateNoteBtn.removeAttribute('style');
+    }
 }
 
 // Set font function
 function setFont(font) {
-    // Remove all existing font classes
     document.body.classList.remove('font-inter', 'font-mono', 'font-serif', 'font-space');
-    
-    // Add appropriate font class
     document.body.classList.add(`font-${font}`);
     
-    // Update active state in font options
-    fontOptions.forEach(option => {
-        if (option.getAttribute('data-font') === font) {
-            option.classList.add('active');
-        } else {
-            option.classList.remove('active');
-        }
+    const currentFontOptions = document.querySelectorAll('.font-option');
+    currentFontOptions.forEach(option => {
+        option.classList.toggle('active', option.getAttribute('data-font') === font);
     });
     
-    // Save font preference
     localStorage.setItem('font', font);
     currentFont = font;
 
-    // If we've already loaded a note, refresh the editor to apply the new font
     if (currentNoteId) {
         const selectedNote = notes.find(note => note.id === currentNoteId);
         if (selectedNote) {
@@ -1397,30 +1363,30 @@ function setFont(font) {
 
 // Set background function
 function setBackground(background) {
-    // Update active state in background options
-    backgroundOptions.forEach(option => {
-        if (option.getAttribute('data-background') === background) {
-            option.classList.add('active');
-        } else {
-            option.classList.remove('active');
-        }
+    const currentBackgroundOptions = document.querySelectorAll('.background-option');
+    currentBackgroundOptions.forEach(option => {
+        option.classList.toggle('active', option.getAttribute('data-background') === background);
     });
     
-    // Save background preference
     localStorage.setItem('background', background);
     currentBackground = background;
     
-    // Update background on current note view if one is open
     if (currentNoteId) {
-        const noteBackground = document.querySelector('.note-background');
+        const noteBackground = noteView.querySelector('.note-background'); 
         if (noteBackground) {
             noteBackground.className = `note-background bg-${background}`;
         } else {
-            // If the background element doesn't exist yet, re-render the note view
             const selectedNote = notes.find(note => note.id === currentNoteId);
             if (selectedNote) {
                 renderNoteView(selectedNote);
             }
+        }
+    } else {
+        const emptyStateBackground = noteView.querySelector('.note-background');
+        if (emptyStateBackground) {
+             emptyStateBackground.className = `note-background bg-${background}`;
+        } else {
+            renderEmptyNoteView(); 
         }
     }
 }
@@ -1621,6 +1587,3 @@ function handleNoteEditorKeyDown(event) {
     }
     // Add Tab/Shift+Tab handling here in the future if needed
 }
-
-// Initialize the app
-initializeApp();

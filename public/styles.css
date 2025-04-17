@@ -974,7 +974,7 @@ body {
 
     /* Optimize note editor for mobile */
     .note-editor {
-        padding: 50px 50px; /* Reduce left/right padding specifically for mobile */
+        padding: 30px 30px; /* Reduce left/right padding specifically for mobile */
         padding-bottom: 30vh; /* Adjust bottom padding for mobile */
         
         font-size: 19px; /* Adjust font size for mobile readability */
@@ -1616,7 +1616,7 @@ body {
 /* Info Toggle Button */
 .info-toggle {
     position: absolute;
-    left: 65px; /* Position next to theme toggle */
+    left: 70px; /* Position it to the right of the theme-toggle */
     bottom: 20px;
     background: var(--bg-secondary);
     width: 36px;
@@ -1690,4 +1690,10 @@ body {
         max-width: calc(100% - 40px);
         z-index: 1200; /* Ensure it's above toggle like theme palette */
     }
+}
+
+/* Hide info toggle when sidebar is hidden on desktop */
+.container.sidebar-hidden .info-toggle {
+    opacity: 0;
+    visibility: hidden;
 }
