@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     // Run critical CSS generation only in production
     ...(process.env.NODE_ENV === 'production' ? [PluginCritical({
-      criticalUrl: './dist', // Use the build output dir as base URL (for local processing)
+      criticalUrl: './', // Changed: Use project root or relative base?
       criticalBase: './dist', // Base directory for outputting/modifying files
       criticalPages: [
         { uri: 'index.html', template: 'index' } // Target the main index.html
