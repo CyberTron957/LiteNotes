@@ -1,3 +1,4 @@
+import { io } from "socket.io-client";
 import './fontawesome/css/all.min.css';
 
 const appContainer = document.getElementById('app-container');
