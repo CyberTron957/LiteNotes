@@ -1,42 +1,17 @@
 import { defineConfig } from 'vite';
 import purgecss from '@fullhuman/postcss-purgecss';
-// import PluginCritical from 'rollup-plugin-critical'; // Commented out
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // Add the critical plugin
-  plugins: [
-    // Run critical CSS generation only in production - COMMENTED OUT
-    /*
-    ...(process.env.NODE_ENV === 'production' ? [PluginCritical({
-      criticalUrl: './', // Changed: Use project root or relative base?
-      criticalBase: './dist', // Base directory for outputting/modifying files
-      criticalPages: [
-        { uri: 'index.html', template: 'index' } // Target the main index.html
-      ],
-      criticalConfig: {
-        // Attempt to inline the critical CSS directly into the HTML
-        inline: true,
-        // Extract the non-critical CSS into a separate file (Vite might handle this anyway)
-        extract: false,
-        // Set dimensions for critical viewport
-        width: 1200,
-        height: 800,
-        // Optional: Add penthouse options if needed
-        // penthouse: {
-        //   blockJSRequests: false,
-        // }
-      },
-    })] : [])
-    */
-  ],
+  // No specific config needed for now, defaults are fine
+  // Build output directory defaults to 'dist'
   css: {
     postcss: {
       plugins: [
         // Only run PurgeCSS in production
         ...(process.env.NODE_ENV === 'production' ? [purgecss({
-          content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'], // Adjusted scan paths
-          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
+          content: ['./index.html', './src/**/*.{js,ts,jsx,tsx,vue}'], // Files to scan for used CSS classes
+          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || [] // Basic extractor, may need refinement
         })] : [])
       ]
     }

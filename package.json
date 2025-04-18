@@ -30,7 +30,6 @@
     "@fullhuman/postcss-purgecss": "^7.0.2",
     "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
-    "rollup-plugin-critical": "^1.0.15",
     "socket.io-client": "^4.8.1",
     "vite": "^6.3.2"
   }
