@@ -1,3 +1,56 @@
+/* Inter font */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  src: url('./fonts/inter-v18-latin/inter-v18-latin-300.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/inter-v18-latin/inter-v18-latin-regular.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  src: url('./fonts/inter-v18-latin/inter-v18-latin-500.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  src: url('./fonts/inter-v18-latin/inter-v18-latin-600.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./fonts/inter-v18-latin/inter-v18-latin-700.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+
+/* Roboto Mono font */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/roboto-mono-v23-latin/roboto-mono-v23-latin-regular.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./fonts/roboto-mono-v23-latin/roboto-mono-v23-latin-700.woff2') format('woff2'); /* Updated path */
+  font-display: swap;
+}
+
 :root {
     /* Dark theme (default) */
     --bg-primary: #000000;
@@ -1339,7 +1392,6 @@ body {
 .theme-color.rose-gold { background-color: #f9f2f5; border: 1px solid #e7ccd0; border-radius: 50%; }
 .theme-color.monochrome { 
     background-color: #000000; 
-    border: 1px solid var(--text-primary); /* Use text color for better contrast */
     border-radius: 50%;
 }
 
