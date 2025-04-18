@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite';
 import purgecss from '@fullhuman/postcss-purgecss';
-import PluginCritical from 'rollup-plugin-critical';
+// import PluginCritical from 'rollup-plugin-critical'; // Commented out
 
 // https://vitejs.dev/config/
 export default defineConfig({
   // Add the critical plugin
   plugins: [
-    // Run critical CSS generation only in production
+    // Run critical CSS generation only in production - COMMENTED OUT
+    /*
     ...(process.env.NODE_ENV === 'production' ? [PluginCritical({
       criticalUrl: './', // Changed: Use project root or relative base?
       criticalBase: './dist', // Base directory for outputting/modifying files
@@ -27,6 +28,7 @@ export default defineConfig({
         // }
       },
     })] : [])
+    */
   ],
   css: {
     postcss: {
