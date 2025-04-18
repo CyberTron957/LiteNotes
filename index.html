@@ -7,16 +7,9 @@
     <!-- Vite handles image paths relative to index.html, so /src/images/ is correct -->
     <link rel="icon" href="/src/images/blue_icon.png" type="image/png">
     
-    <!-- Link to Font Awesome CDN (Vite doesn't process external URLs) -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
-    
-    <!-- Link to Google Fonts CDN -->
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap"> -->
-    
-    <!-- Link to Roboto Mono CDN -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/index.css"> -->
-    
-    <!-- Link to main stylesheet inside src -->
+    <!-- Use local FontAwesome for Vite compatibility -->
+    <link rel="stylesheet" href="/src/fontawesome/css/all.min.css">
+    <!-- Use local fonts if needed, or keep Google Fonts CDN commented out -->
     <link rel="stylesheet" href="/src/styles.css">
 </head>
 <body class="font-inter">
@@ -262,4 +255,4 @@
      <!-- Analytics script (Keep as is) -->
      <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
-</html> 
+</html>
