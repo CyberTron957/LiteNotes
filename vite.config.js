@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import purgecss from '@fullhuman/postcss-purgecss';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,11 +7,7 @@ export default defineConfig({
   css: {
     postcss: {
       plugins: [
-        // Only run PurgeCSS in production
-        ...(process.env.NODE_ENV === 'production' ? [purgecss({
-          content: ['./index.html', './src/**/*.{js,ts,jsx,tsx,vue}'], // Files to scan for used CSS classes
-          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || [] // Basic extractor, may need refinement
-        })] : [])
+        // PurgeCSS removed
       ]
     }
   },
