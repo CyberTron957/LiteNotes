@@ -366,11 +366,11 @@ body {
     font-weight: 600;
     line-height: 1.4;
     outline: none;
-    padding: 80px 120px 0; /* Match horizontal padding, no bottom padding */
-    margin-bottom: 0.5em; /* Space below title */
+    padding: 80px 120px 30px; /* Match horizontal padding, no bottom padding */
     display: block;
     box-sizing: border-box;
     flex-shrink: 0; /* Prevent title from shrinking */
+    z-index: 1;
 }
 
 .note-content-editor { /* Renamed from note-editor for clarity */
@@ -425,7 +425,7 @@ body {
 
     /* Adjust mobile title/content padding */
     .note-title-input {
-        padding: 60px 20px 0;
+        padding: 60px 30px 0;
         font-size: 1.6em;
     }
     
@@ -732,7 +732,7 @@ body {
 }
 
 .delete-note {
-    display: none;
+    display: flex; /* Keep flex for centering icon */
     cursor: pointer;
     color: var(--text-secondary);
     transition: all 0.2s;
@@ -744,6 +744,10 @@ body {
     justify-content: center;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
+}
+
+.delete-note i {
+    pointer-events: none; /* Make the icon ignore clicks */
 }
 
 .delete-note:hover {
@@ -765,8 +769,8 @@ body {
     opacity: 0;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     position: fixed;
-    bottom:auto;
-    right: 25px;
+    bottom: 20px;
+    right: 20px;
     z-index: 1001;
 }
 
@@ -1194,8 +1198,8 @@ body {
 
 .theme-palette {
     position: absolute;
-    left: 70px;
-    bottom: 20px;
+    left: 30px;
+    bottom: 40px;
     background-color: var(--bg-secondary);
     border-radius: var(--radius);
     border: 1px solid var(--border);
