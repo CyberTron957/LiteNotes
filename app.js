@@ -31,10 +31,8 @@ const KEY_DERIVATION_ITERATIONS = 100000; // Standard iteration count for PBKDF2
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
-
-// Consider removing session middleware if only using JWT and not session features
-// If keeping, ensure a proper session store (like connect-pg-simple) is used for production
+// Remove old static serving
+// app.use(express.static('public')); 
 app.use(session({
     secret: SECRET_KEY || 'insecure-fallback-key-for-session', 
     resave: false,
@@ -847,19 +845,36 @@ app.post('/reset-password', async (req, res) => {
 });
 
 
-// Serve frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// --- Serve HTML files (Keep specific routes) ---
+// Serve home.html specifically
 app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+    res.sendFile(path.join(__dirname, 'home.html')); // Serve from root
 });
 
-// Serve the new reset password page
+// Serve the reset password page specifically
 app.get('/reset-password', (req, res) => {
-    // We just serve the HTML, the token is handled by frontend JS
-    res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+    res.sendFile(path.join(__dirname, 'reset-password.html')); // Serve from root
 });
+
+// --- Conditional Static Serving & Catch-all for Production --- 
+if (process.env.NODE_ENV === 'production') {
+    // Serve static files from the Vite build output directory
+    app.use(express.static(path.join(__dirname, 'dist')));
+
+    // Catch-all route to serve index.html for any other requests (like /, /about, etc.)
+    // This allows client-side routing to work with Vite build
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    });
+} else {
+    // In development, Vite's dev server handles serving index.html
+    // Serve index.html from root for the base path only
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(__dirname, 'index.html'));
+    });
+    // You might still need to serve src assets if not using Vite dev serverproxy
+    // app.use('/src', express.static(path.join(__dirname, 'src')));
+}
 
 // Add route to toggle sidebar collapse (remains the same)
 app.post('/toggle-sidebar', authenticateToken, (req, res) => {
