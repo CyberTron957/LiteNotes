@@ -367,113 +367,97 @@ async function initializeApp() {
     // Handle mobile/desktop view on startup first
     handleResize(); 
 
+    // --- Apply visual settings first (Theme, Font, Background, Sidebar) ---
     // Check for saved theme and font preferences
     const savedTheme = localStorage.getItem('theme');
-    // Define valid themes *after* removing dark/mono/warm
-    const validThemes = ['light', 'sepia', 'slate', 'midnight', 'charcoal', 'forest', 'blue', 'mint', 'lavender', 'rose-gold', 'monochrome']; // Update this list if themes change
-    let themeToSet = 'light'; // Default to light theme
-
-    if (savedTheme && validThemes.includes(savedTheme)) {
-        themeToSet = savedTheme;
-    } else if (savedTheme) {
-        // If saved theme is invalid (e.g., old 'dark'), use a fallback
-        console.warn(`Invalid saved theme "${savedTheme}" found, falling back to light.`);
-        themeToSet = 'light'; // Fallback for any invalid saved theme
-    } else {
-        // On first visit with no saved theme, use a random *valid* theme
-        themeToSet = validThemes[Math.floor(Math.random() * validThemes.length)];
-    }
+    const validThemes = ['light', 'sepia', 'slate', 'midnight', 'charcoal', 'forest', 'blue', 'mint', 'lavender', 'rose-gold', 'monochrome'];
+    let themeToSet = 'light';
+    if (savedTheme && validThemes.includes(savedTheme)) { themeToSet = savedTheme; }
+    else if (savedTheme) { console.warn(`Invalid theme "${savedTheme}", using light.`); themeToSet = 'light'; }
+    else { themeToSet = validThemes[Math.floor(Math.random() * validThemes.length)]; }
     setTheme(themeToSet);
     
     const savedFont = localStorage.getItem('font');
-    if (savedFont) {
-        setFont(savedFont);
-    } else {
-        setFont('inter'); // Default font
-    }
+    setFont(savedFont || 'inter');
     
     const savedBackground = localStorage.getItem('background');
-    if (savedBackground) {
-        setBackground(savedBackground);
-    } else {
-        setBackground('none'); // Default background
-    }
+    setBackground(savedBackground || 'none');
     
-    // Initialize theme, font, and background options
-    initThemeAndFontOptions();
+    initThemeAndFontOptions(); // Update palette UI
     
-    // Restore sidebar state first
     const storedSidebarState = localStorage.getItem('sidebarState');
-    if (storedSidebarState) {
-        isSidebarHidden = storedSidebarState === 'hidden';
-        if (isSidebarHidden) {
-            appContainer.classList.add('sidebar-hidden');
-        } else {
-            appContainer.classList.remove('sidebar-hidden');
-        }
-    } else {
-        localStorage.setItem('sidebarState', 'hidden');
-    }
+    isSidebarHidden = storedSidebarState === 'hidden';
+    if (isSidebarHidden) { appContainer.classList.add('sidebar-hidden'); }
+    else { appContainer.classList.remove('sidebar-hidden'); }
+    // Removed setting default sidebar state here, rely on initial check
 
-    // Determine auth status
+    // --- Render Initial Empty Structure & Make Visible ---
+    console.log("Rendering initial empty view structure...");
+    renderNoteView({ title: '', content: '' }); // Render placeholder structure
+    currentNoteId = null; // Ensure no note is considered selected initially
+    appContainer.style.display = 'flex'; 
+    window.getComputedStyle(appContainer).display; // Force style recalc
+    appContainer.classList.remove('sidebar-hidden-init-mobile');
+    console.log("App container visible.");
+
+    // --- Now handle Auth and Note Loading/Creation (Deferred) ---
+    console.log("Checking auth and loading notes...");
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
+    let noteToSelect = null;
     
-    if (token && username) {
-        // User is logged in
-        currentToken = token;
-        currentUser = username;
-        displayUsername.textContent = username;
-        userInitial.textContent = username.charAt(0).toUpperCase();
-        userInfoSection.style.display = 'flex';
-        signinPrompt.style.display = 'none';
-        authModal.classList.remove('visible');
-        // Initialize Socket.IO connection
-        initializeSocket();
-        // Fetch notes (this function now sorts and updates global `notes`)
-        await fetchNotes(); 
-    } else {
-        // User is not logged in
-        userInfoSection.style.display = 'none';
-        signinPrompt.style.display = 'block';
-        // Load notes (this function now sorts and updates global `notes`)
-        loadLocalNotes(); 
-    }
-
-    // Ensure app container is visible AFTER potentially loading notes
-    appContainer.style.display = 'flex'; 
-    // Force a style recalculation maybe?
-    window.getComputedStyle(appContainer).display;
-    // Remove temporary mobile init class after display
-    appContainer.classList.remove('sidebar-hidden-init-mobile');
-
-    // If no notes exist after loading, create a default one
-    if (notes.length === 0) {
-        //console.log("No notes found, creating initial note...");
-        await createNewNote(); // Wait for creation and selection
-        //console.log("Initial note created.");
-    } else {
-        // Only try to select existing note if we didn't just create one
-        //console.log("Attempting to select last opened note...");
-        const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
-        //console.log("lastOpenNoteId from storage:", lastOpenNoteId);
-        //console.log("Current notes array (length):", notes.length);
-        //console.log("Current notes array (IDs):", notes.map(n => n.id));
-
-        const lastNote = notes.find(note => note.id === lastOpenNoteId);
-
-        if (lastNote) {
-            //console.log("Found last note, selecting:", lastNote.id);
-            selectNote(lastNote.id);
-        } else if (notes.length > 0) { // Should always be true here unless create failed
-            //console.log("Last note not found or invalid, selecting first note:", notes[0].id);
-            selectNote(notes[0].id); // Select the first (most recent) note
+    try {
+        if (token && username) {
+            // User is logged in
+            console.log("User logged in, initializing UI and fetching notes...");
+            currentToken = token;
+            currentUser = username;
+            displayUsername.textContent = username;
+            userInitial.textContent = username.charAt(0).toUpperCase();
+            userInfoSection.style.display = 'flex';
+            signinPrompt.style.display = 'none';
+            authModal.classList.remove('visible');
+            initializeSocket();
+            await fetchNotes(); // Fetch notes, updates global `notes` and renders list
         } else {
-             // This case should ideally not be reached if creation worked
-            //console.log("No notes found, rendering empty view.");
-            renderEmptyNoteView();
+            // User is not logged in
+            console.log("User not logged in, loading local notes...");
+            userInfoSection.style.display = 'none';
+            signinPrompt.style.display = 'block';
+            loadLocalNotes(); // Load local notes, updates global `notes` and renders list
         }
+
+        // --- Determine which note to select AFTER loading/fetching ---
+        console.log("Determining note to select...");
+        if (notes.length === 0) {
+            console.log("No notes found, creating initial note...");
+            await createNewNote(); // Creates AND selects the new note
+            noteToSelect = notes.find(n => n.id === currentNoteId); // Re-find the newly created note
+            console.log("Initial note created and selected.");
+        } else {
+            console.log("Attempting to select last opened or first note...");
+            const lastOpenNoteId = localStorage.getItem('lastOpenNoteId');
+            noteToSelect = notes.find(note => note.id === lastOpenNoteId);
+            
+            if (!noteToSelect) {
+                console.log("Last opened note not found, selecting first note.");
+                noteToSelect = notes[0]; // Select the first (most recent) note
+            }
+             if (noteToSelect) {
+                 console.log(`Selected note ID: ${noteToSelect.id}`);
+                 selectNote(noteToSelect.id); // Select and render the chosen note
+             } else {
+                 // Should not happen if notes.length > 0, but handle defensively
+                 console.log("Error: No note found to select, rendering empty view.");
+                 renderEmptyNoteView(); // Fallback
+             }
+        }
+    } catch (error) {
+        console.error("Error during deferred initialization:", error);
+        // Potentially show an error to the user or render empty state
+        renderEmptyNoteView(); 
     }
+    console.log("Initialization complete.");
 }
 
 // Load notes from local storage
@@ -758,18 +742,22 @@ function renderNotesList() {
 
 // Select a note
 function selectNote(noteId) {
-    currentNoteId = noteId;
-    // Find note by ID (works for both server and local)
     const selectedNote = notes.find(note => note.id === noteId);
     
     if (selectedNote) {
-        renderNoteView(selectedNote);
+        currentNoteId = noteId; // Set current ID *before* rendering
+        renderNoteView(selectedNote); // Render the actual note content
         renderNotesList(); // Update the active state in the list
         localStorage.setItem('lastOpenNoteId', noteId); // Store last opened note
     } else {
-        // Handle case where note might have been deleted
-        currentNoteId = null;
-        renderEmptyNoteView();
+        // Handle case where note might have been deleted or doesn't exist
+        console.warn(`selectNote called with invalid ID: ${noteId}`);
+        if (currentNoteId === noteId) { // If the invalid note was the current one
+            currentNoteId = null;
+            renderEmptyNoteView();
+        }
+        // If it wasn't the current one, just update the list (active state removal)
+        renderNotesList(); 
     }
 }
 
