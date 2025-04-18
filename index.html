@@ -11,6 +11,18 @@
     <link rel="stylesheet" href="/src/fontawesome/css/all.min.css">
     <!-- Use local fonts if needed, or keep Google Fonts CDN commented out -->
     <link rel="stylesheet" href="/src/styles.css">
+    <meta name="description" content="LiteNotes is a minimalist, secure, and fast note-taking app with end-to-end encryption, offline support, and cloud sync. Take notes anywhere, anytime, privately.">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="https://litenotes.xyz/">
+    <meta property="og:title" content="LiteNotes - Minimalist Notes App">
+    <meta property="og:description" content="Minimalist, secure, and fast note-taking app with encryption, offline support, and cloud sync.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://litenotes.xyz/">
+    <meta property="og:image" content="https://litenotes.xyz/images/blue_icon.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LiteNotes - Minimalist Notes App">
+    <meta name="twitter:description" content="Minimalist, secure, and fast note-taking app with encryption, offline support, and cloud sync.">
+    <meta name="twitter:image" content="https://litenotes.xyz/images/blue_icon.png">
 </head>
 <body class="font-inter">
  <!-- Auth Modal -->
@@ -86,7 +98,7 @@
 </div>
 
 <!-- Main App -->
-<div id="app-container" class="container sidebar-hidden" style="display: none;">
+<main id="app-container" class="container sidebar-hidden" style="display: none;">
     <div class="sidebar">
         <div class="sidebar-header">
             <div id="user-info-section" class="user-section" style="display: none;">
@@ -232,7 +244,7 @@
     <div class="info-toggle" id="info-toggle">
          <i class="fas fa-info-circle"></i>
      </div> 
-</div>
+</main>
 
 <!-- Delete Confirmation Popup -->
 <div id="delete-confirm-popup" class="popup-overlay">
@@ -254,5 +266,8 @@
     <script type="module" src="/src/scripts.js" defer></script>
      <!-- Analytics script (Keep as is) -->
      <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+     <footer class="home-footer">
+        <p>&copy; 2025 LiteNotes</p>
+    </footer>
 </body>
 </html>
