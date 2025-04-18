@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiteNotes - Minimalist Notes</title>
     <link rel="icon" href="images/blue_icon.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/index.css">
+    
+    <!-- Load Font Awesome asynchronously -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <!-- Load Google Fonts asynchronously -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap"></noscript>
+    
+    <!-- Load Roboto Mono asynchronously -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/index.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/index.css"></noscript>
+    
+    <!-- Load main stylesheet directly (usually small enough or critical) -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="font-inter">
@@ -247,8 +256,8 @@
 
     <div id="toast" class="toast"></div>
     
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="scripts.js"></script>
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="scripts.js" defer></script>
      <!-- This script is used for privacy-first analytics, allowing us to gather non-intrusive data such as the type of device users are on and the number of active logins. This information helps us improve the app while maintaining user privacy. -->
      <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
