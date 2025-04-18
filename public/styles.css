@@ -366,7 +366,7 @@ body {
     font-weight: 600;
     line-height: 1.4;
     outline: none;
-    padding: 50px 100px 0; /* Match horizontal padding, no bottom padding */
+    padding: 80px 120px 0; /* Match horizontal padding, no bottom padding */
     margin-bottom: 0.5em; /* Space below title */
     display: block;
     box-sizing: border-box;
@@ -386,7 +386,7 @@ body {
     resize: none;
     outline: none;
     /* Adjust padding: No top padding, match horizontal, keep bottom */
-    padding: 0 100px 50vh 100px; 
+    padding: 0 100px 50vh 120px; 
     border-radius: 0;
     overflow-y: auto; /* Enable scrolling *within* the content editor */
     caret-color: var(--text-primary);
@@ -425,7 +425,7 @@ body {
 
     /* Adjust mobile title/content padding */
     .note-title-input {
-        padding: 30px 15px 0;
+        padding: 60px 20px 0;
         font-size: 1.6em;
     }
     
@@ -1047,7 +1047,7 @@ body {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
+        transition: opacity 0.3s ease, visibility 0.3s ease; /* Restore transition */
     }
 
     /* Info toggle styling fixed on mobile */
@@ -1055,15 +1055,15 @@ body {
         position: fixed; /* Keep fixed */
         left: 70px; 
         bottom: 20px;
-        z-index: 1;
+        z-index: 1010; /* Correct z-index */
         /* Hide by default on mobile */
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
+        transition: opacity 0.3s ease, visibility 0.3s ease; /* Restore transition */
     }
 
-    /* Show buttons ONLY when mobile sidebar is visible */
+    /* Restore rules that show buttons only when sidebar is visible */
     body.sidebar-visible .theme-toggle,
     body.sidebar-visible .info-toggle {
         opacity: 1;
