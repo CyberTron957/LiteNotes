@@ -795,6 +795,7 @@ function renderNoteView(note) {
     titleInput.spellcheck = false;
     titleInput.setAttribute('autocorrect', 'off');
     titleInput.setAttribute('autocapitalize', 'off');
+    titleInput.setAttribute('dir', 'auto');
 
     // Create Content Textarea
     const contentTextarea = document.createElement('textarea');
@@ -805,6 +806,7 @@ function renderNoteView(note) {
     contentTextarea.spellcheck = false;
     contentTextarea.setAttribute('autocorrect', 'off');
     contentTextarea.setAttribute('autocapitalize', 'off');
+    contentTextarea.setAttribute('dir', 'auto');
 
     // Action buttons and status dot (remain the same structure)
     const actionsDiv = document.createElement('div');
