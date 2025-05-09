@@ -509,8 +509,8 @@ app.post('/login', async (req, res) => {
         // Store the decrypted key in Redis with expiration (slightly longer than JWT)
         try {
             const redisKey = `userKey:${user.id}`;
-            // Set expiry to 30 days + 1 hour buffer (in seconds)
-            const expirySeconds = (30 * 24 * 60 * 60) + (60 * 60);
+            // Set expiry to 300 days + 1 hour buffer (in seconds)
+            const expirySeconds = (300 * 24 * 60 * 60) + (60 * 60);
             await redisClient.set(redisKey, decryptedUserDataKeyHex, {
                 EX: expirySeconds
             });
@@ -529,7 +529,7 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign(
             { id: user.id, username: user.username }, 
             SECRET_KEY, 
-            { expiresIn: '30d' } // 30 days instead of '1h'
+            { expiresIn: '300d' } // 30 days instead of '1h'
         );
         res.json({ token });
 
