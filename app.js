@@ -764,11 +764,13 @@ app.post('/forgot-password', async (req, res) => {
             [user.id, token, expires]
         );
 
-        const resetLink = `http://localhost:${PORT}/reset-password?token_${token}`; // Using underscore
+        // Use BASE_URL from environment or fallback to localhost for development
+        const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+        const resetLink = `${baseUrl}/reset-password?token_${token}`; // Using underscore
 
         // --- Send Email using Nodemailer ---
         const mailOptions = {
-            from: '"LiteNotes App" <hello@demomailtrap.co>', // Placeholder sender
+            from: `"LiteNotes App" <${process.env.MAIL_USERNAME}>`, // Use your Gmail address
             to: user.email, // Send to the user's actual email (Mailtrap will catch it)
             subject: "Password Reset Request for LiteNotes",
             text: `Hello ${user.username},\n\nPlease click on the following link, or paste it into your browser to complete the password reset process within one hour:\n\n${resetLink}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
