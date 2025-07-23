@@ -59,13 +59,17 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
-// Configure Nodemailer Transporter for Mailtrap Sandbox
+// Configure Nodemailer Transporter for Gmail SMTP
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST, // smtp.mailtrap.io (from .env)
-    port: parseInt(process.env.EMAIL_PORT || '2525', 10), // Port from .env
+    host: process.env.MAIL_SERVER, // Gmail SMTP server
+    port: parseInt(process.env.MAIL_PORT || '587', 10), // Gmail SMTP port
+    secure: false, // Use STARTTLS
     auth: {
-        user: process.env.EMAIL_USER, // Mailtrap Sandbox username from .env
-        pass: process.env.EMAIL_PASS  // Mailtrap Sandbox password from .env
+        user: process.env.MAIL_USERNAME, // Gmail username
+        pass: process.env.MAIL_PASSWORD  // Gmail app password
+    },
+    tls: {
+        rejectUnauthorized: false // Allow self-signed certificates (for development)
     }
 });
 
