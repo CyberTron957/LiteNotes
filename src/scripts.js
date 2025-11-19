@@ -825,14 +825,19 @@ function renderNoteView(note) {
     contentTextarea.setAttribute('autocapitalize', 'off');
     contentTextarea.setAttribute('dir', 'auto');
 
-    // Action buttons and status dot (remain the same structure)
+    // Action buttons and status dot - Use safe DOM manipulation instead of innerHTML
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'note-actions';
-    actionsDiv.innerHTML = `
-            <div class="delete-note" id="delete-note-btn" title="Delete note">
-                 <i class="fas fa-trash"></i>
-            </div>
-    `;
+
+    const deleteNoteDiv = document.createElement('div');
+    deleteNoteDiv.className = 'delete-note';
+    deleteNoteDiv.id = 'delete-note-btn';
+    deleteNoteDiv.title = 'Delete note';
+
+    const trashIcon = document.createElement('i');
+    trashIcon.className = 'fas fa-trash';
+    deleteNoteDiv.appendChild(trashIcon);
+    actionsDiv.appendChild(deleteNoteDiv);
 
     const statusDotDiv = document.createElement('div');
     statusDotDiv.id = 'save-status-dot';
@@ -920,16 +925,33 @@ function showDeleteConfirmation(noteId, buttonElement) {
     });
 }
 
-// Render empty note view
+// Render empty note view - Use safe DOM manipulation instead of innerHTML
 function renderEmptyNoteView() {
-    noteView.innerHTML = `
-        <div class="note-background bg-${currentBackground}"></div>
-        <div class="empty-state">
-            <i class="fas fa-file-alt"></i>
-            <h2>No note selected</h2>
-            <p>Select a note from the sidebar or create a new one to get started.</p>
-        </div>
-    `;
+    // Clear previous content
+    noteView.innerHTML = '';
+
+    const backgroundDiv = document.createElement('div');
+    backgroundDiv.className = `note-background bg-${currentBackground}`;
+
+    const emptyStateDiv = document.createElement('div');
+    emptyStateDiv.className = 'empty-state';
+
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-file-alt';
+
+    const heading = document.createElement('h2');
+    heading.textContent = 'No note selected';
+
+    const paragraph = document.createElement('p');
+    paragraph.textContent = 'Select a note from the sidebar or create a new one to get started.';
+
+    emptyStateDiv.appendChild(icon);
+    emptyStateDiv.appendChild(heading);
+    emptyStateDiv.appendChild(paragraph);
+
+    noteView.appendChild(backgroundDiv);
+    noteView.appendChild(emptyStateDiv);
+
     updatePageTitle(); // Reset page title to default
 }
 

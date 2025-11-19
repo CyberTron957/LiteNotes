@@ -1,13 +1,14 @@
 const express = require('express');
 const session = require('express-session');
 const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg'); // Use pg Pool
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { exec } = require('child_process'); 
 const redis = require('redis');
 const http = require('http'); // Added
 const { Server } = require("socket.io"); // Added
@@ -28,21 +29,87 @@ const ALGORITHM = 'aes-256-gcm';
 const KEY_DERIVATION_ITERATIONS = 100000; // Standard iteration count for PBKDF2
 
 // Middleware
+// Security headers with helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://scripts.simpleanalyticscdn.com"],
+            styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline needed for dynamic styles
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'"],
+            frameSrc: ["'none'"],
+        },
+    },
+    hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+    },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Remove old static serving
 // app.use(express.static('public')); 
+// Rate limiting configuration
+// Strict rate limiter for authentication endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Moderate rate limiter for password reset
+const passwordResetLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // Limit each IP to 3 password reset requests per hour
+    message: 'Too many password reset attempts, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// General API rate limiter
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 1000 requests per windowMs
+    message: 'Too many requests, please slow down.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Apply general rate limiter to all routes
+app.use(apiLimiter);
+
+// Validate SECRET_KEY in production
+if (process.env.NODE_ENV === 'production' && !SECRET_KEY) {
+    console.error('CRITICAL: SECRET_KEY environment variable must be set in production!');
+    process.exit(1);
+}
+
 app.use(session({
-    secret: SECRET_KEY || 'insecure-fallback-key-for-session', 
+    secret: SECRET_KEY || 'dev-only-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
+    name: 'sessionId', // Don't use default 'connect.sid' name
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
+        httpOnly: true, // Prevent JavaScript access to cookies
+        sameSite: 'strict', // Prevent CSRF attacks
+        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year (as requested)
+    }
     // Production recommendation: use a proper session store like connect-pg-simple
     // store: new (require('connect-pg-simple')(session))({
     //   pool : pool,                // Connection pool
     //   tableName : 'user_sessions' // Use another table-name than the default "session" one
     // }),
-    // cookie: { secure: process.env.NODE_ENV === 'production', maxAge: ... } // Set secure flag in production (requires HTTPS)
 }));
 
 // PostgreSQL Connection Pool
@@ -69,7 +136,8 @@ const transporter = nodemailer.createTransport({
         pass: process.env.MAIL_PASSWORD  // Gmail app password
     },
     tls: {
-        rejectUnauthorized: false // Allow self-signed certificates (for development)
+        // Only disable certificate validation in development
+        rejectUnauthorized: process.env.NODE_ENV === 'production'
     }
 });
 
@@ -371,7 +439,7 @@ io.on('connection', (socket) => {
 
 // Routes
 // Register
-app.post('/register', async (req, res) => {
+app.post('/register', authLimiter, async (req, res) => {
     const { username, password, email } = req.body;
 
     // Input validation
@@ -443,7 +511,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login
-app.post('/login', async (req, res) => {
+app.post('/login', authLimiter, async (req, res) => {
     const { username, password } = req.body;
 
     const attemptInfo = failedLoginAttempts[username] || { count: 0, lockoutUntil: null };
@@ -513,8 +581,8 @@ app.post('/login', async (req, res) => {
         // Store the decrypted key in Redis with expiration (slightly longer than JWT)
         try {
             const redisKey = `userKey:${user.id}`;
-            // Set expiry to 300 days + 1 hour buffer (in seconds)
-            const expirySeconds = (300 * 24 * 60 * 60) + (60 * 60);
+            // Set expiry to 1 year + 1 hour buffer (in seconds)
+            const expirySeconds = (365 * 24 * 60 * 60) + (60 * 60);
             await redisClient.set(redisKey, decryptedUserDataKeyHex, {
                 EX: expirySeconds
             });
@@ -529,11 +597,11 @@ app.post('/login', async (req, res) => {
              return res.status(500).json({ message: 'Server configuration error' });
         }
 
-        // Create JWT with 30 days expiration instead of 1 hour
+        // Create JWT with 1 year expiration
         const token = jwt.sign(
-            { id: user.id, username: user.username }, 
-            SECRET_KEY, 
-            { expiresIn: '300d' } // 30 days instead of '1h'
+            { id: user.id, username: user.username },
+            SECRET_KEY,
+            { expiresIn: '365d' } // 1 year
         );
         res.json({ token });
 
@@ -737,7 +805,7 @@ app.delete('/notes/:id', authenticateToken, async (req, res) => {
 // --- Forgot Password Routes ---
 
 // 1. Request Password Reset (Using Nodemailer + Mailtrap Sandbox)
-app.post('/forgot-password', async (req, res) => {
+app.post('/forgot-password', passwordResetLimiter, async (req, res) => {
     const { email } = req.body;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
