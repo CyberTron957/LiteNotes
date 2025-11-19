@@ -1,0 +1,27 @@
+
+> note-taking-app@1.0.0 build
+> vite build
+
+vite v6.3.2 building for production...
+transforming...
+✓ 34 modules transformed.
+✗ Build failed in 762ms
+
+✨ [vite-plugin-compression]:algorithm=gzip - compressed file successfully: 
+dist//Users/pradhyun/Movies/LiteNotes/styles.css.gz                    46.65kb / gzip: 8.55kb
+dist//Users/pradhyun/Movies/LiteNotes/fontawesome/css/all.min.css.gz   72.16kb / gzip: 20.52kb
+
+
+
+✨ [vite-plugin-compression]:algorithm=brotliCompress - compressed file successfully: 
+dist//Users/pradhyun/Movies/LiteNotes/styles.css.br                    46.65kb / brotliCompress: 7.36kb
+dist//Users/pradhyun/Movies/LiteNotes/fontawesome/css/all.min.css.br   72.16kb / brotliCompress: 17.76kb
+
+
+error during build:
+[vite:terser] terser not found. Since Vite v3, terser has become an optional dependency. You need to install it.
+    at loadTerserPath (file:///Users/pradhyun/Movies/LiteNotes/node_modules/vite/dist/node/chunks/dep-DG3BLbPj.js:9752:13)
+    at Object.renderChunk (file:///Users/pradhyun/Movies/LiteNotes/node_modules/vite/dist/node/chunks/dep-DG3BLbPj.js:9793:27)
+    at Object.handler (file:///Users/pradhyun/Movies/LiteNotes/node_modules/vite/dist/node/chunks/dep-DG3BLbPj.js:46462:15)
+    at file:///Users/pradhyun/Movies/LiteNotes/node_modules/rollup/dist/es/shared/node-entry.js:22188:40
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

@@ -1,0 +1,78 @@
+litenotes.xyz {
+    # Enable automatic HTTPS
+    # Caddy handles SSL certificates automatically via Let's Encrypt
+
+    # Serve static files from dist folder
+    root * /path/to/LiteNotes/dist
+
+    # Enable compression (Brotli and Gzip)
+    encode {
+        # Prefer Brotli (better compression)
+        brotli
+        gzip
+    }
+
+    # Security headers (additional to helmet.js on backend)
+    header {
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME sniffing
+        X-Content-Type-Options "nosniff"
+        # XSS Protection
+        X-XSS-Protection "1; mode=block"
+        # Remove server header
+        -Server
+    }
+
+    # Cache static assets aggressively
+    @static {
+        path *.js *.css *.woff2 *.woff *.ttf *.png *.jpg *.jpeg *.webp *.svg *.ico
+    }
+    header @static {
+        Cache-Control "public, max-age=31536000, immutable"
+    }
+
+    # Cache HTML with shorter duration
+    @html {
+        path *.html
+    }
+    header @html {
+        Cache-Control "public, max-age=3600"
+    }
+
+    # Proxy API requests to Node.js backend
+    reverse_proxy /login localhost:3000
+    reverse_proxy /register localhost:3000
+    reverse_proxy /logout localhost:3000
+    reverse_proxy /notes* localhost:3000
+    reverse_proxy /forgot-password localhost:3000
+    reverse_proxy /reset-password localhost:3000
+    reverse_proxy /toggle-sidebar localhost:3000
+    reverse_proxy /home localhost:3000
+
+    # WebSocket support for Socket.IO
+    reverse_proxy /socket.io/* localhost:3000 {
+        # Required for WebSocket
+        header_up Connection {http.request.header.Connection}
+        header_up Upgrade {http.request.header.Upgrade}
+    }
+
+    # Serve optimized files if they exist (.br or .gz)
+    @compressed {
+        file {
+            try_files {path}.br {path}.gz {path}
+        }
+    }
+
+    # Handle SPA routing - serve index.html for all non-API routes
+    try_files {path} {path}/ /index.html
+
+    # Serve files
+    file_server
+
+    # Logs
+    log {
+        output file /var/log/caddy/litenotes.log
+        format json
+    }
+}

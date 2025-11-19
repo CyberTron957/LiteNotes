@@ -1,14 +1,26 @@
 module.exports = {
   apps : [{
-    name   : "litenotes-app", // Choose a name for your app
-    script : "app.js",        // The script PM2 will run
-    env_production: {       // Environment variables for production
+    name   : "litenotes-app",
+    script : "app.js",
+    instances: "max", // Use all CPU cores
+    exec_mode: "cluster", // Enable clustering for better performance
+    env_production: {
        NODE_ENV: "production",
-       // You might need to add other production env vars here,
-       // like PORT, SECRET_KEY, DB credentials, if they aren't
-       // already set globally on your server or in a .env file
-       // PORT: 3000, 
-       // SECRET_KEY: 'your_production_secret'
-    }
+       PORT: 3000,
+       // Note: Other sensitive env vars should be in .env file:
+       // SECRET_KEY, PG_PASSWORD, MAIL_PASSWORD, etc.
+    },
+    // Auto-restart on crash
+    autorestart: true,
+    // Watch for file changes (disable in production)
+    watch: false,
+    // Max memory restart
+    max_memory_restart: '1G',
+    // Error logging
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    // Merge logs from all instances
+    merge_logs: true
   }]
 } 

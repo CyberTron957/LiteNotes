@@ -1,9 +1,44 @@
 import { defineConfig } from 'vite';
+import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // No specific config needed for now, defaults are fine
-  // Build output directory defaults to 'dist'
+  plugins: [
+    // Gzip compression
+    viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+    }),
+    // Brotli compression (better than gzip)
+    viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+    })
+  ],
+  build: {
+    // Optimize build
+    target: 'es2015',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor code
+          'socket': ['socket.io-client'],
+        }
+      }
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+  },
   css: {
     postcss: {
       plugins: [

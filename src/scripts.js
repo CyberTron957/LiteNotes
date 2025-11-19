@@ -1,5 +1,4 @@
 import { io } from "socket.io-client";
-import './fontawesome/css/all.min.css';
 
 const appContainer = document.getElementById('app-container');
 const loginForm = document.getElementById('login-form');
@@ -441,7 +440,7 @@ async function initializeApp() {
     }
 
     // Ensure app container is visible AFTER potentially loading notes
-    appContainer.style.display = 'flex'; 
+    appContainer.style.opacity = '1'; 
     // Force a style recalculation maybe?
     window.getComputedStyle(appContainer).display;
     // Remove temporary mobile init class after display
@@ -834,8 +833,12 @@ function renderNoteView(note) {
     deleteNoteDiv.id = 'delete-note-btn';
     deleteNoteDiv.title = 'Delete note';
 
-    const trashIcon = document.createElement('i');
-    trashIcon.className = 'fas fa-trash';
+    // Create SVG icon using inline approach for better performance
+    const trashIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    trashIcon.setAttribute('class', 'icon icon-trash');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#icon-trash');
+    trashIcon.appendChild(use);
     deleteNoteDiv.appendChild(trashIcon);
     actionsDiv.appendChild(deleteNoteDiv);
 
@@ -936,8 +939,13 @@ function renderEmptyNoteView() {
     const emptyStateDiv = document.createElement('div');
     emptyStateDiv.className = 'empty-state';
 
-    const icon = document.createElement('i');
-    icon.className = 'fas fa-file-alt';
+    // Create SVG icon
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'icon icon-file');
+    icon.setAttribute('style', 'width: 3em; height: 3em;');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#icon-file');
+    icon.appendChild(use);
 
     const heading = document.createElement('h2');
     heading.textContent = 'No note selected';

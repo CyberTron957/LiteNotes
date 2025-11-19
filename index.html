@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiteNotes - Minimalist Notes</title>
-    <!-- Vite handles image paths relative to index.html, so /src/images/ is correct -->
-    <link rel="icon" href="/src/images/blue_icon.png" type="image/png">
-    
-    <!-- Use local FontAwesome for Vite compatibility -->
-    <link rel="stylesheet" href="/src/fontawesome/css/all.min.css">
-    <!-- Use local fonts if needed, or keep Google Fonts CDN commented out -->
+
+    <!-- Optimized favicon -->
+    <link rel="icon" href="/optimized/icon-192.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/optimized/icon-192.webp">
+
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://scripts.simpleanalyticscdn.com">
+    <link rel="dns-prefetch" href="https://scripts.simpleanalyticscdn.com">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/src/icons.css">
     <link rel="stylesheet" href="/src/styles.css">
     <meta name="description" content="LiteNotes is a minimalist, secure, and fast note-taking app with end-to-end encryption, offline support, and cloud sync. Take notes anywhere, anytime, privately.">
     <meta name="robots" content="index,follow">
@@ -25,6 +30,17 @@
     <meta name="twitter:image" content="https://litenotes.xyz/images/blue_icon.png">
 </head>
 <body class="font-inter">
+ <!-- Inline SVG Icon Sprite -->
+ <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="icon-plus" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></symbol>
+  <symbol id="icon-bars" viewBox="0 0 448 512"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></symbol>
+  <symbol id="icon-sign-out" viewBox="0 0 512 512"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 448 512"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></symbol>
+  <symbol id="icon-file" viewBox="0 0 384 512"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM112 256H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></symbol>
+  <symbol id="icon-palette" viewBox="0 0 512 512"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></symbol>
+  <symbol id="icon-info" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></symbol>
+ </svg>
+
  <!-- Auth Modal -->
  <div id="auth-modal" class="modal-overlay">
     <div class="modal-content">
@@ -98,21 +114,21 @@
 </div>
 
 <!-- Main App -->
-<main id="app-container" class="container sidebar-hidden" style="display: none;">
+<main id="app-container" class="container sidebar-hidden" style="opacity: 0; transition: opacity 0.2s;">
     <div class="sidebar">
         <div class="sidebar-header">
             <div id="user-info-section" class="user-section" style="display: none;">
                 <div class="user-avatar" id="user-initial"></div>
                 <div class="username" id="display-username">Username</div>
                 <div class="logout-btn" id="logout-btn" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
+                    <svg class="icon icon-sign-out"><use href="#icon-sign-out"></use></svg>
                 </div>
             </div>
             <div id="signin-prompt" style="display: none;">
                 <button id="show-login-btn" class="btn btn-primary">Sign in to Sync</button>
             </div>
             <div class="create-note" id="create-note-btn">
-                <i class="fas fa-plus"></i> New Note
+                <svg class="icon icon-plus"><use href="#icon-plus"></use></svg> New Note
             </div>
         </div>
         <div class="notes-list" id="notes-list">
@@ -224,12 +240,12 @@
         </div>
     </div>
     <div class="sidebar-toggle" id="sidebar-toggle">
-        <i class="fas fa-bars"></i>
+        <svg class="icon icon-bars"><use href="#icon-bars"></use></svg>
     </div>
     <div class="main-content">
         <div id="note-view">
             <div class="empty-state">
-                <i class="fas fa-file-alt"></i>
+                <svg class="icon icon-file" style="width: 3em; height: 3em;"><use href="#icon-file"></use></svg>
                 <h2>No note selected</h2>
                 <p>Select a note from the sidebar or create a new one to get started.</p>
             </div>
@@ -238,11 +254,11 @@
 
     <!-- Buttons outside sidebar/main content -->
     <div class="theme-toggle" id="theme-toggle">
-        <i class="fas fa-palette"></i>
-    </div> 
+        <svg class="icon icon-palette"><use href="#icon-palette"></use></svg>
+    </div>
     <!-- Info Button -->
     <div class="info-toggle" id="info-toggle">
-         <i class="fas fa-info-circle"></i>
+        <svg class="icon icon-info"><use href="#icon-info"></use></svg>
      </div> 
 </main>
 
@@ -259,13 +275,11 @@
 
 
     <div id="toast" class="toast"></div>
-    
-    <!-- Socket.IO client - Keep this, served by server -->
-    <!-- <script src="/socket.io/socket.io.js" defer></script> -->
+
     <!-- Main script inside src - Use type="module" for Vite -->
-    <script type="module" src="/src/scripts.js" defer></script>
-     <!-- Analytics script (Keep as is) -->
-     <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    <script type="module" src="/src/scripts.js"></script>
+     <!-- Analytics script - loaded async and deferred for performance -->
+     <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
      
 </body>
 </html>

@@ -32,7 +32,11 @@
     "@fullhuman/postcss-purgecss": "^7.0.2",
     "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
+    "sharp": "^0.34.5",
     "socket.io-client": "^4.8.1",
-    "vite": "^6.3.2"
+    "terser": "^5.44.1",
+    "vite": "^6.3.2",
+    "vite-imagetools": "^9.0.0",
+    "vite-plugin-compression": "^0.5.1"
   }
 }

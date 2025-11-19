@@ -1,0 +1,66 @@
+/* Minimal Icon System - Replaces FontAwesome */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    fill: currentColor;
+    flex-shrink: 0;
+    pointer-events: none; /* Allow clicks to pass through to parent */
+    overflow: visible; /* Prevent clipping */
+}
+
+/* Specific icon sizes to match FontAwesome */
+.icon-plus {
+    width: 0.875em;
+    height: 1em;
+}
+.icon-bars {
+    width: 0.875em;
+    height: 1em;
+}
+.icon-sign-out {
+    width: 1em;
+    height: 1em;
+}
+.icon-trash {
+    width: 0.875em;
+    height: 1em;
+}
+.icon-file {
+    width: 0.75em;
+    height: 1em;
+}
+.icon-palette {
+    width: 1em;
+    height: 1em;
+}
+.icon-info {
+    width: 1em;
+    height: 1em;
+}
+
+/* Make sure icons in buttons are properly sized - reduced by 20% */
+.theme-toggle .icon,
+.info-toggle .icon,
+.sidebar-toggle .icon,
+.logout-btn .icon {
+    width: 0.85em;
+    height: 0.85em;
+    vertical-align: middle; /* Center icons properly */
+}
+
+/* Ensure button containers don't clip icons */
+.theme-toggle,
+.info-toggle,
+.sidebar-toggle,
+.logout-btn {
+    overflow: visible !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.create-note .icon {
+    margin-right: 0.5em;
+}

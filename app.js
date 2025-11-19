@@ -37,7 +37,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "https://scripts.simpleanalyticscdn.com"],
             styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline needed for dynamic styles
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'"],
+            connectSrc: ["'self'", "ws:", "wss:"], // Allow WebSocket connections for Socket.IO
             fontSrc: ["'self'"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
@@ -49,7 +49,8 @@ app.use(helmet({
         includeSubDomains: true,
         preload: true
     },
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    crossOriginEmbedderPolicy: false, // Allow Socket.IO to work
 }));
 
 app.use(compression());
