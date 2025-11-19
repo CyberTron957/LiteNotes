@@ -756,6 +756,21 @@ function renderNotesList() {
     });
 }
 
+// Update page title based on current note
+function updatePageTitle() {
+    if (currentNoteId) {
+        const currentNote = notes.find(note => note.id === currentNoteId);
+        if (currentNote) {
+            const noteTitle = currentNote.title || 'Untitled';
+            document.title = `${noteTitle} - LiteNotes`;
+        } else {
+            document.title = 'LiteNotes - Minimalist Notes';
+        }
+    } else {
+        document.title = 'LiteNotes - Minimalist Notes';
+    }
+}
+
 // Select a note
 function selectNote(noteId) {
     currentNoteId = noteId;
@@ -766,10 +781,12 @@ function selectNote(noteId) {
         renderNoteView(selectedNote);
         renderNotesList(); // Update the active state in the list
         localStorage.setItem('lastOpenNoteId', noteId); // Store last opened note
+        updatePageTitle(); // Update page title with note title
     } else {
         // Handle case where note might have been deleted
         currentNoteId = null;
         renderEmptyNoteView();
+        updatePageTitle(); // Reset page title to default
     }
 }
 
@@ -913,6 +930,7 @@ function renderEmptyNoteView() {
             <p>Select a note from the sidebar or create a new one to get started.</p>
         </div>
     `;
+    updatePageTitle(); // Reset page title to default
 }
 
 // Create a new note
@@ -1059,6 +1077,9 @@ async function saveCurrentNote() {
     // Update local array first for responsiveness
     const noteIndex = notes.findIndex(note => note.id === currentNoteId);
     if (noteIndex !== -1) {
+        // Save old title before updating to check if it changed
+        const oldTitle = notes[noteIndex].title || '';
+        
         notes[noteIndex].title = title;
         notes[noteIndex].content = content;
         notes[noteIndex].updated_at = new Date().toISOString();
@@ -1067,6 +1088,11 @@ async function saveCurrentNote() {
         const noteItem = notesList.querySelector(`.note-item[data-note-id="${currentNoteId}"]`);
         if (noteItem && noteItem.textContent !== (title || 'Untitled')) {
             noteItem.textContent = title || 'Untitled';
+        }
+        
+        // Update page title if note title changed
+        if (oldTitle !== title) {
+            updatePageTitle();
         }
         
         // Re-sort the notes array after updating (only if necessary - title doesn't affect sort)
@@ -1275,6 +1301,7 @@ async function logout() {
         setBackground('none'); // Reset to default background
         loadLocalNotes(); // Load any potentially remaining local notes (though usually cleared)
         renderEmptyNoteView(); // Show empty state
+        updatePageTitle(); // Reset page title to default
         
         showToast('Logged out successfully', 'success');
     } catch (error) {
@@ -1300,6 +1327,7 @@ async function logout() {
         setBackground('none');
         loadLocalNotes();
         renderEmptyNoteView();
+        updatePageTitle(); // Reset page title to default
     }
 }
 
@@ -1631,6 +1659,11 @@ function initializeSocket() {
              }
 
              if (needsListRender) { renderNotesList(); }
+             
+             // Update page title if the updated note is currently open
+             if (currentNoteId === updatedNote.id && titleChanged) {
+                 updatePageTitle();
+             }
              
              if (needsViewRender) {
                  // --- Update separate title and content fields --- 
