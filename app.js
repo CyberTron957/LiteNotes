@@ -122,8 +122,8 @@ const pool = new Pool({
 });
 
 pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+    console.error('Unexpected error on idle client', err);
+    process.exit(-1);
 });
 
 // Configure Nodemailer Transporter for Gmail SMTP
@@ -142,12 +142,12 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify transporter config (optional, good for debugging)
-transporter.verify(function(error, success) {
-  if (error) {
-    console.error("Nodemailer transporter verification failed:", error);
-  } else {
-    console.log("Nodemailer transporter is configured correctly for sending.");
-  }
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error("Nodemailer transporter verification failed:", error);
+    } else {
+        console.log("Nodemailer transporter is configured correctly for sending.");
+    }
 });
 
 // Check DB connection and create tables
@@ -174,14 +174,14 @@ const initializeDatabase = async () => {
         try {
             await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS encryption_salt TEXT;');
             await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS encrypted_user_key TEXT;');
-             console.log('Columns encryption_salt and encrypted_user_key checked/added.');
+            console.log('Columns encryption_salt and encrypted_user_key checked/added.');
         } catch (alterErr) {
             // Ignore errors if columns already exist, log others
             if (!alterErr.message.includes('already exists')) {
-                 console.error('Error altering users table:', alterErr.stack);
+                console.error('Error altering users table:', alterErr.stack);
             }
         }
-         console.log('Table \'users\' checked/created successfully.');
+        console.log('Table \'users\' checked/created successfully.');
 
         // Update notes table
         await client.query(`
@@ -195,18 +195,18 @@ const initializeDatabase = async () => {
                 updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
             );
         `);
-         // Change column types if they exist and are not TEXT
-         try {
-             await client.query('ALTER TABLE notes ALTER COLUMN title TYPE TEXT;');
-             await client.query('ALTER TABLE notes ALTER COLUMN content TYPE TEXT;');
-             console.log('Columns notes.title and notes.content type checked/set to TEXT.');
-         } catch (alterNotesErr) {
-             // Log errors if altering fails (might happen if table doesn't exist yet, which is handled above)
-             if (!alterNotesErr.message.includes('does not exist')) { // Ignore "table does not exist"
-                 console.error('Error altering notes table columns:', alterNotesErr.stack);
-             }
-         }
-         console.log('Table \'notes\' checked/created successfully.');
+        // Change column types if they exist and are not TEXT
+        try {
+            await client.query('ALTER TABLE notes ALTER COLUMN title TYPE TEXT;');
+            await client.query('ALTER TABLE notes ALTER COLUMN content TYPE TEXT;');
+            console.log('Columns notes.title and notes.content type checked/set to TEXT.');
+        } catch (alterNotesErr) {
+            // Log errors if altering fails (might happen if table doesn't exist yet, which is handled above)
+            if (!alterNotesErr.message.includes('does not exist')) { // Ignore "table does not exist"
+                console.error('Error altering notes table columns:', alterNotesErr.stack);
+            }
+        }
+        console.log('Table \'notes\' checked/created successfully.');
 
         // Password resets table (remains the same)
         await client.query(`
@@ -217,7 +217,7 @@ const initializeDatabase = async () => {
                 expires_at TIMESTAMPTZ NOT NULL
             );
         `);
-         console.log('Table \'password_resets\' checked/created successfully.');
+        console.log('Table \'password_resets\' checked/created successfully.');
 
         // Trigger function and trigger (remains the same)
         await client.query(`
@@ -237,15 +237,15 @@ const initializeDatabase = async () => {
             );
         `);
         if (!triggerExists.rows[0].exists) {
-             await client.query(`
+            await client.query(`
                 CREATE TRIGGER update_notes_modtime
                 BEFORE UPDATE ON notes
                 FOR EACH ROW
                 EXECUTE FUNCTION update_modified_column();
             `);
-             console.log('Trigger for notes.updated_at created.');
+            console.log('Trigger for notes.updated_at created.');
         } else {
-             console.log('Trigger for notes.updated_at already exists.');
+            console.log('Trigger for notes.updated_at already exists.');
         }
 
     } catch (err) {
@@ -275,8 +275,8 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-         console.log("Auth failed: No token provided");
-         return res.status(401).json({ message: 'No token provided' });
+        console.log("Auth failed: No token provided");
+        return res.status(401).json({ message: 'No token provided' });
     }
 
     // Ensure SECRET_KEY is loaded before verifying
@@ -290,12 +290,12 @@ const authenticateToken = (req, res, next) => {
             // Provide a more specific message for token expiration
             if (err.name === 'TokenExpiredError') {
                 console.log("Auth failed: Token expired");
-                return res.status(401).json({ 
+                return res.status(401).json({
                     message: 'Your session has expired. Please log in again.',
                     code: 'TOKEN_EXPIRED'
                 });
             }
-            
+
             console.log("Auth failed: Invalid token", err.message);
             return res.status(403).json({ message: 'Invalid token' });
         }
@@ -490,7 +490,7 @@ app.post('/register', authLimiter, async (req, res) => {
 
         // Check if insert happened (result.rows might be empty on conflict)
         if (result.rowCount === 0) {
-             // Explicitly check for email conflict if email was provided
+            // Explicitly check for email conflict if email was provided
             if (email) {
                 const emailCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
                 if (emailCheck.rowCount > 0) {
@@ -593,8 +593,8 @@ app.post('/login', authLimiter, async (req, res) => {
         }
 
         if (!SECRET_KEY) {
-             console.error("Login failed: SECRET_KEY not configured on server.");
-             return res.status(500).json({ message: 'Server configuration error' });
+            console.error("Login failed: SECRET_KEY not configured on server.");
+            return res.status(500).json({ message: 'Server configuration error' });
         }
 
         // Create JWT with 1 year expiration
@@ -638,13 +638,13 @@ app.post('/logout', authenticateToken, async (req, res) => {
                 // Still respond, but log the error
                 return res.status(500).json({ message: 'Error during session logout' });
             }
-             console.log(`Session destroyed for user ${userId || '(unknown)'}`);
-             // Respond *after* session destruction attempt
-             res.json({ message: 'Logged out successfully' });
+            console.log(`Session destroyed for user ${userId || '(unknown)'}`);
+            // Respond *after* session destruction attempt
+            res.json({ message: 'Logged out successfully' });
         });
     } else {
         // If only using JWT, no server-side session action needed
-         res.json({ message: 'Logged out successfully' });
+        res.json({ message: 'Logged out successfully' });
     }
 });
 
@@ -701,24 +701,24 @@ app.get('/notes', authenticateToken, async (req, res) => {
                 const decryptedTitle = note.title ? decryptData(note.title, userKey) : ''; // Default to empty string if null/decryption fails
                 const decryptedContent = note.content ? decryptData(note.content, userKey) : '';
                 // Handle potential decryption failure (decryptData returns null)
-                 if (note.title && decryptedTitle === null) {
-                     console.warn(`Failed to decrypt title for note ID ${note.id}`);
-                 }
-                 if (note.content && decryptedContent === null) {
-                     console.warn(`Failed to decrypt content for note ID ${note.id}`);
-                 }
+                if (note.title && decryptedTitle === null) {
+                    console.warn(`Failed to decrypt title for note ID ${note.id}`);
+                }
+                if (note.content && decryptedContent === null) {
+                    console.warn(`Failed to decrypt content for note ID ${note.id}`);
+                }
                 return {
                     ...note,
                     title: decryptedTitle === null ? '[Decryption Error]' : decryptedTitle, // Provide feedback on error
                     content: decryptedContent === null ? '[Decryption Error]' : decryptedContent
                 };
             } catch (decryptErr) {
-                 console.error(`Error decrypting note ID ${note.id}:`, decryptErr);
-                 return {
-                     ...note,
-                     title: '[Decryption Error]',
-                     content: '[Decryption Error]'
-                 };
+                console.error(`Error decrypting note ID ${note.id}:`, decryptErr);
+                return {
+                    ...note,
+                    title: '[Decryption Error]',
+                    content: '[Decryption Error]'
+                };
             }
         });
 
@@ -858,7 +858,7 @@ app.post('/forgot-password', passwordResetLimiter, async (req, res) => {
             console.error("Error sending password reset email via Nodemailer:", emailError);
             // Attempt to delete the token we just created, as email failed
             await pool.query('DELETE FROM password_resets WHERE token = $1', [token]).catch(delErr => {
-                 console.error("Error deleting reset token after failed email send:", delErr.stack);
+                console.error("Error deleting reset token after failed email send:", delErr.stack);
             });
             return res.status(500).json({ message: 'Error sending password reset email. Please try again later.' });
         }
@@ -922,12 +922,20 @@ app.post('/reset-password', async (req, res) => {
 // --- Serve HTML files (Keep specific routes) ---
 // Serve home.html specifically
 app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname, 'home.html')); // Serve from root
+    if (process.env.NODE_ENV === 'production') {
+        res.sendFile(path.join(__dirname, 'dist', 'home.html'));
+    } else {
+        res.sendFile(path.join(__dirname, 'home.html'));
+    }
 });
 
 // Serve the reset password page specifically
 app.get('/reset-password', (req, res) => {
-    res.sendFile(path.join(__dirname, 'reset-password.html')); // Serve from root
+    if (process.env.NODE_ENV === 'production') {
+        res.sendFile(path.join(__dirname, 'dist', 'reset-password.html'));
+    } else {
+        res.sendFile(path.join(__dirname, 'reset-password.html'));
+    }
 });
 
 // --- Conditional Static Serving & Catch-all for Production --- 
@@ -973,7 +981,7 @@ server.listen(PORT, () => { // Changed from app.listen to server.listen
     if (!process.env.SECRET_KEY) {
         console.warn("!!! REMINDER: SECRET_KEY is not set in .env. Application is insecure. !!!");
     }
-     if (!process.env.PG_PASSWORD) { // Example check for DB config
+    if (!process.env.PG_PASSWORD) { // Example check for DB config
         console.warn("!!! REMINDER: PostgreSQL environment variables (e.g., PG_PASSWORD) might be missing in .env. !!!");
     }
 });

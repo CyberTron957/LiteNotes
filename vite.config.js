@@ -2,8 +2,15 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // No specific config needed for now, defaults are fine
-  // Build output directory defaults to 'dist'
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        home: 'home.html',
+        reset_password: 'reset-password.html'
+      }
+    }
+  },
   css: {
     postcss: {
       plugins: [
