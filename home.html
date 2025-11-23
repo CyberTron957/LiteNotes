@@ -4,28 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiteNotes - Minimalist, Secure, Offline Note Taking App</title>
+    <title>LiteNotes - Simple, Fast, No-Login Note Taking App</title>
     <!-- Use local FontAwesome and fonts for Vite compatibility -->
     <link rel="stylesheet" href="/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css">
+    <!-- Use src path for styles to ensure latest version is used -->
+    <link rel="stylesheet" href="/src/styles.css">
     <link rel="icon" href="/images/blue_icon.png" type="image/png">
     <link rel="manifest" href="/manifest.json">
     <meta name="description"
-        content="LiteNotes is a minimalist, secure, and fast note-taking app with end-to-end encryption, offline support, and cloud sync. Take notes anywhere, anytime, privately.">
+        content="LiteNotes is a simple, fast, and minimalist note-taking app. Start writing immediately with our no-login notes taker feature. Secure, encrypted, and offline-ready.">
     <meta name="keywords"
-        content="note taking app, minimalist notes, secure notes, offline notes, encrypted notes, end-to-end encryption, simple notes, private notes, web app">
+        content="no login notes taker, minimalist note taking app, simple notes, fast notes, secure notes, offline note taking app, encrypted notes, private notes, web app">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="https://litenotes.xyz/home">
-    <meta property="og:title" content="LiteNotes - Minimalist, Secure, Offline Note Taking App">
+    <meta property="og:title" content="LiteNotes - Simple, Fast, No-Login Note Taking App">
     <meta property="og:description"
-        content="Minimalist, secure, and fast note-taking app with encryption, offline support, and cloud sync. Your thoughts stay private.">
+        content="The best minimalist note taking app. Start writing immediately without logging in. Secure, fast, and simple notes with end-to-end encryption.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://litenotes.xyz/home">
     <meta property="og:image" content="https://litenotes.xyz/images/blue_icon.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="LiteNotes - Minimalist, Secure, Offline Note Taking App">
+    <meta name="twitter:title" content="LiteNotes - Simple, Fast, No-Login Note Taking App">
     <meta name="twitter:description"
-        content="Minimalist, secure, and fast note-taking app with encryption, offline support, and cloud sync.">
+        content="The best minimalist note taking app. Start writing immediately without logging in. Secure, fast, and simple notes.">
     <meta name="twitter:image" content="https://litenotes.xyz/images/blue_icon.png">
 
     <script type="application/ld+json">
@@ -40,7 +41,7 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "description": "A minimalist, secure, and fast note-taking app with end-to-end encryption and offline support.",
+      "description": "A simple, fast, and minimalist note-taking app with no-login required for local notes. Secure end-to-end encryption and offline support.",
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
@@ -324,13 +325,14 @@
         </nav>
 
         <section class="hero">
-            <h1 class="hero-title">Minimalist. Secure.<br>Just Notes.</h1>
-            <p class="hero-subtitle">A fast, secure, and minimalist notes application with end-to-end encryption and
-                offline support. Your thoughts stay private, synced, and always available.</p>
+            <h1 class="hero-title">Simple, Fast, & Minimalist<br>No-Login Note Taker.</h1>
+            <p class="hero-subtitle">The best <strong>minimalist note taking app</strong> that is secure by design.
+                Start writing immediately with our <strong>no-login notes taker</strong> feature, or sign in for
+                end-to-end encrypted cloud sync. Fast, simple, and private.</p>
 
             <div class="cta-buttons">
-                <a href="/" class="cta-primary">Get Started <i class="fas fa-arrow-right"></i></a>
-                <a href="#features" class="cta-secondary">Learn More</a>
+                <a href="/" class="cta-primary">Start Writing Now <i class="fas fa-arrow-right"></i></a>
+                <a href="#features" class="cta-secondary">Explore Features</a>
             </div>
             <video autoplay loop muted playsinline preload="metadata" class="demo-image">
                 <source src="/images/mockup.mp4" type="video/mp4">
@@ -341,43 +343,45 @@
 
         <section id="features" class="features">
             <div class="feature">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3 class="feature-title">Fast & Simple Notes</h3>
+                <p class="feature-desc">Experience the fastest way to capture ideas. A <strong>simple note taking
+                        app</strong> designed for speed and focus, without the clutter.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon"><i class="fas fa-user-secret"></i></div>
+                <h3 class="feature-title">No Login Required</h3>
+                <p class="feature-desc">Use it as a <strong>no-login notes taker</strong> for local tasks. Your data
+                    stays on your device until you choose to sync.</p>
+            </div>
+
+            <div class="feature">
                 <div class="feature-icon"><i class="fas fa-lock"></i></div>
-                <h3 class="feature-title">End-to-End Encryption</h3>
-                <p class="feature-desc">Your notes are encrypted using AES-256-GCM before being stored. Only you can
-                    decrypt them with your password.</p>
+                <h3 class="feature-title">Secure & Encrypted</h3>
+                <p class="feature-desc"><strong>Secure notes</strong> with military-grade AES-256-GCM encryption. Your
+                    private thoughts remain truly private.</p>
             </div>
 
             <div class="feature">
                 <div class="feature-icon"><i class="fas fa-wifi-slash"></i></div>
-                <h3 class="feature-title">Offline Support</h3>
-                <p class="feature-desc">Create and edit notes even when offline. Changes sync automatically when you
-                    reconnect.</p>
+                <h3 class="feature-title">Offline First</h3>
+                <p class="feature-desc">The perfect <strong>offline note taking app</strong>. Create and edit anywhere,
+                    anytime. Sync happens automatically when you're back online.</p>
             </div>
 
             <div class="feature">
                 <div class="feature-icon"><i class="fas fa-palette"></i></div>
-                <h3 class="feature-title">Customizable UI</h3>
-                <p class="feature-desc">Multiple themes, fonts, and background patterns to match your style and improve
-                    readability.</p>
-            </div>
-
-            <div class="feature">
-                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
-                <h3 class="feature-title">Real-time Saving</h3>
-                <p class="feature-desc">Your notes are automatically saved as you type, with encrypted cloud backup when
-                    signed in.</p>
-            </div>
-
-            <div class="feature">
-                <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-                <h3 class="feature-title">Mobile Responsive</h3>
-                <p class="feature-desc">Fully optimized for mobile viewing. Take your notes anywhere on any device.</p>
+                <h3 class="feature-title">Minimalist Design</h3>
+                <p class="feature-desc">A beautiful, <strong>minimalist interface</strong> with customizable themes and
+                    fonts. Distraction-free writing at its finest.</p>
             </div>
 
             <div class="feature">
                 <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
-                <h3 class="feature-title">Cloud Sync & Merge</h3>
-                <p class="feature-desc">Local notes are automatically merged with your cloud notes when you sign in.</p>
+                <h3 class="feature-title">Seamless Sync</h3>
+                <p class="feature-desc">Merge local notes with your cloud account effortlessly. Keep your <strong>simple
+                        notes</strong> synchronized across all your devices.</p>
             </div>
         </section>
 
@@ -389,7 +393,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const themeSwitcher = document.getElementById('theme-switcher');
-            const icon = themeSwitcher.querySelector('i');
+            const icon = themeSwitcher ? themeSwitcher.querySelector('i') : null;
 
             // Define all available themes in order of rotation
             const themes = [
@@ -420,7 +424,9 @@
             // Initialize with random theme and font
             currentThemeIndex = Math.floor(Math.random() * themes.length);
             currentFontIndex = Math.floor(Math.random() * fonts.length);
-            setTheme(themes[currentThemeIndex], fonts[currentFontIndex], false); // No animation for initial theme
+
+            // Apply initial theme immediately
+            setTheme(themes[currentThemeIndex], fonts[currentFontIndex], false);
 
             // Function to set theme and font with smooth transition
             function setTheme(themeName, fontName, animate = true) {
@@ -433,8 +439,7 @@
                     document.body.style.opacity = '0.92';
                 }
 
-                // Slight delay before changing theme class
-                setTimeout(() => {
+                const applyTheme = () => {
                     // Remove all theme classes
                     themes.forEach(theme => {
                         document.body.classList.remove(`${theme}-theme`);
@@ -469,12 +474,19 @@
                             }, 300);
                         }, 300);
                     }
-                }, animate ? 300 : 0);
+                };
+
+                if (animate) {
+                    setTimeout(applyTheme, 300);
+                } else {
+                    applyTheme();
+                }
             }
 
             function updateThemeIcon(theme) {
+                if (!icon) return;
                 // Show sun icon for light themes, moon for dark
-                if (['dark', 'slate', 'mono'].includes(theme)) {
+                if (['dark', 'slate', 'mono', 'midnight', 'forest'].includes(theme)) {
                     icon.classList.remove('fa-sun');
                     icon.classList.add('fa-moon');
                 } else {
@@ -504,16 +516,18 @@
             }, 5000);
 
             // Toggle auto-rotation on click
-            themeSwitcher.addEventListener('click', function () {
-                autoRotate = !autoRotate;
+            if (themeSwitcher) {
+                themeSwitcher.addEventListener('click', function () {
+                    autoRotate = !autoRotate;
 
-                // Visual indicator that auto-rotation is paused
-                if (autoRotate) {
-                    themeSwitcher.style.opacity = '1';
-                } else {
-                    themeSwitcher.style.opacity = '0.7';
-                }
-            });
+                    // Visual indicator that auto-rotation is paused
+                    if (autoRotate) {
+                        themeSwitcher.style.opacity = '1';
+                    } else {
+                        themeSwitcher.style.opacity = '0.7';
+                    }
+                });
+            }
 
             // Smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
