@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://litenotes.xyz/sitemap.xml
