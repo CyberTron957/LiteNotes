@@ -241,7 +241,6 @@ body.font-space {
     box-sizing: border-box;
     font-family: var(--font-family, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
     font-weight: var(--font-weight-normal, 400);
-    transition: all 0.2s ease;
 }
 
 body {

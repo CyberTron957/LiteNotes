@@ -10,6 +10,13 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#4a90e2">
 
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/src/fonts/inter-v18-latin/inter-v18-latin-regular.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/src/fonts/inter-v18-latin/inter-v18-latin-700.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/src/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Use local FontAwesome for Vite compatibility -->
     <link rel="stylesheet" href="/src/fontawesome/css/all.min.css">
     <!-- Use local fonts if needed, or keep Google Fonts CDN commented out -->

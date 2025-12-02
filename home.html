@@ -5,6 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiteNotes - Simple, Fast, No-Login Note Taking App</title>
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/src/fonts/inter-v18-latin/inter-v18-latin-regular.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/src/fonts/inter-v18-latin/inter-v18-latin-700.woff2" as="font" type="font/woff2"
+        crossorigin>
+    <link rel="preload" href="/fontawesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Use local FontAwesome and fonts for Vite compatibility -->
     <link rel="stylesheet" href="/fontawesome/css/all.min.css">
     <!-- Use src path for styles to ensure latest version is used -->
@@ -52,6 +59,7 @@
 
     <style>
         /* Homepage-specific styles */
+        /* Add transitions to specific elements for theme switching */
         body {
             margin: 0;
             padding: 0;
@@ -63,8 +71,12 @@
             transition: background-color 2s ease, color 2s ease;
         }
 
-        /* Add transitions to all elements that use CSS variables */
-        * {
+        .nav-link,
+        .cta-primary,
+        .cta-secondary,
+        .feature,
+        .theme-switcher,
+        .logo span {
             transition: background-color 2s ease, color 2s ease, border-color 2s ease, box-shadow 2s ease;
         }
 
